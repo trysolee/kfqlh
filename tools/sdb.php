@@ -37,6 +37,14 @@ class SDB
         SDB::$ready = true;
     }
 
+    public static function exec($sql)
+    {
+        if (!SDB::$ready) {
+            SDB::bSet();
+        }
+
+        mysql_query($sql);
+    }
     #=====================================
     # 执行 SQL
     #

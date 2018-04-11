@@ -1,5 +1,5 @@
 <?php
-
+include_once "/tools/sys.php";
 include_once "/tools/sdb.php";
 include_once "/tools/ret.php";
 include_once "/class/get_openid.php";
@@ -61,6 +61,10 @@ class cla_openid
     #
     public static function getByCode_end($code)
     {
+        if (SYS::$调试) {
+            return cla_openid::getByOpenid(SYS::$adminOpenID);
+        }
+
         openID::get($code);
         if (openID::$OK) {
 
@@ -94,6 +98,10 @@ class cla_openid
     #
     public function is超级()
     {
+        if (SYS::$调试) {
+            return true;
+        }
+
         return $this->$openID == SYS::$adminOpenID;
     }
 

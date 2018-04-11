@@ -3,6 +3,8 @@
 # 关闭 一个 帖子
 # ( 自己的帖子 或 管理员)
 #
+# 不能回复
+#
 
 include_once "/tools/sys.php";
 include_once "/tools/ret.php";

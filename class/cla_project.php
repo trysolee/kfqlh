@@ -12,8 +12,25 @@ include_once "/tools/sdb.php";
 include_once "/tools/ret.php";
 include_once "/tools/sys.php";
 
-class cla_project
+class cla_project extends sdb_one
 {
+
+    #=====================================
+    #  BUF 设置
+    #
+    private static $BOX = [];
+    public static function addBUF($obj)
+    {
+        cla_project::$BOX[$obj->ID()] = $obj;
+    }
+    public static function saveBUF()
+    {
+        foreach (cla_project::$BOX as
+            $key => $value) {
+            $value->save();
+        }
+    }
+
     #############################
     # 巡查系统框架
     #
@@ -116,14 +133,6 @@ class cla_project
         '甲方巡查',
     ];
 
-    #
-    #  新建 'work' ( 工作贴 ) 的权限判定
-    private static $CR_NWork = [
-        '监理巡查',
-        '施工日常',
-        '甲方巡查',
-    ];
-
     #=====================================
     # 新建 'work' ( 工作贴 ) 的权限判定
     #
@@ -173,7 +182,7 @@ class cla_project
                     '监理' => [
                         'name' => '监理单位',
                         'user' => [
-                            // '11' => ['监理巡查', '监理维护'],
+
                         ],
                     ],
                     '甲方' => [
@@ -206,6 +215,8 @@ class cla_project
 
         $o      = new cla_project();
         $o->DAT = $D;
+
+        cla_project::addBUF($o);
         return $o;
     }
 
@@ -214,6 +225,10 @@ class cla_project
     #
     public static function getByID($JID)
     {
+        if (!empty(cla_project::$BOX[$JID])) {
+            return cla_project::$BOX[$JID];
+        }
+
         $o = new cla_project();
 
         $sql = "SELECT * FROM  projoct "
@@ -224,6 +239,8 @@ class cla_project
             $GLOBALS['RET']->ID无效_end('cla_project');
             exit();
         }
+        cla_project::addBUF($o);
+
         return $o;
     }
 
@@ -243,7 +260,18 @@ class cla_project
     #
     #=====================================
 
-    private $DAT;
+    public function dbName()
+    {
+        return SYS::$DBNL['pro'];
+    }
+    public function ID()
+    {
+        return $this->DAT['JID'];
+    }
+    public function ID_name()
+    {
+        return 'JID';
+    }
 
     private $OK = false;
     #####################################
@@ -269,27 +297,94 @@ class cla_project
         #
         # 返回 user 在 分组的权限
         #
+        return $this->getRoleByUID($_SESSION['UID']);
+    }
+    public function getRoleByUID($UID)
+    {
+
+        print_r($this->DAT['JSON']
+            [$_SESSION['分组']]);
+
+        ###############################
+        #
+        # 返回 user 在 分组的权限
+        #
         return $this->DAT['JSON']
             [$_SESSION['分组']]
             ['user']
-            [$_SESSION['UID']];
+            [$UID]
+            ['role'];
 
     }
 
     #####################################
     #
     #
-    public function 加入分组($分组, $UID)
+    public function 设置UID权限($分组, $UID, $role)
+    {
+        $this->DAT['JSON']
+        [$分组]
+        ['user']
+        [$UID]
+        ['role'] = $role;
+    }
+    public function 移去UID权限($分组, $UID)
+    {
+        unset($this->DAT['JSON']
+            [$分组]
+            ['user']
+            [$UID]);
+    }
+
+    #####################################
+    #
+    #
+    public function 被邀请进入分组($UID, $name, $分组, $inUID)
     {
 
-        ###############################
-        # 需要避免 二次扫描
-        # 把前面设置好的权限 冲掉了
-        #
-        $分组人员 = &$this->DAT['JSON'][$分组]['user'];
-        if (!array_key_exists($UID, $分组人员)) {
-            $分组人员[$UID] = cla_project::$FK[$分组]['roleNEW'];
+        $this->DAT['JSON']
+        [$分组]
+        ['user']
+        [$UID] = [
+            'name'   => $name,
+            'role'   => cla_project::$FK[$分组]['roleNEW'],
+            'inUser' => $inUID,
+        ];
+    }
+
+    #####################################
+    #
+    #
+    public function 他是成员($分组, $UID)
+    {
+        return empty($this->DAT['JSON']
+            [$分组]
+            ['user']
+            [$UID]
+        );
+    }
+    public function 我是成员()
+    {
+        return $this->他是成员(
+            $_SESSION['分组'],
+            $_SESSION['UID']
+        );
+    }
+    public function 他在项目($UID)
+    {
+        if ($this->他是成员('监理', $UID)) {
+            return true;
         }
+        if ($this->他是成员('甲方', $UID)) {
+            return true;
+        }
+        if ($this->他是成员('施工', $UID)) {
+            return true;
+        }
+        if ($this->他是成员('临时', $UID)) {
+            return true;
+        }
+        return false;
     }
 
     #####################################
@@ -342,10 +437,11 @@ class cla_project
         #
         # 3 . '踢走' , 如果$ARR 长度为 0
         # 踢走这个成员
-        # 还需要修改user的'项目.分组'列表
         #
         # 4 . 只能处理当前分组
         #
+
+        $分组 = $_SESSION['分组'];
 
         ############################
         # $ARR 必须是 array
@@ -354,18 +450,17 @@ class cla_project
             $R->错误终止_end('参数不是array(2)');
         }
 
-        $分组人员 = &$this->DAT['JSON'][$_SESSION['分组']]['user'];
         ############################
         # $UID 原来必须在 分组里面
         #
-        if (!array_key_exists($UID, $分组人员)) {
+        if (!$this->他是成员($分组, $UID)) {
             $GLOBALS['RET']->错误终止_end('增加了UID');
         }
 
         ############################
         # 权限 合法性
         #
-        if (count(array_diff($ARR, cla_project::$FK[$_SESSION['分组']]['role'])) > 0) {
+        if (count(array_diff($ARR, cla_project::$FK[$分组]['role'])) > 0) {
             $GLOBALS['RET']->错误终止_end('非法权限');
         }
 
@@ -374,15 +469,18 @@ class cla_project
             # 如果 $ARR长度为0 ,
             # 踢走着个 UID
             #
-            unset($分组人员[$UID]);
-            $u = cla_user::getByID($UID);
-            $u->remove成员($_SESSION['JID'], $_SESSION['分组']);
+            $this->移去UID权限($分组, $UID);
+
+            if (!$this->他在项目($UID)) {
+                $u = cla_user::getByID($UID);
+                $u->离开项目($this->getJID());
+            }
 
         } else {
             ############################
             #设置新权限
             #
-            $分组人员[$UID] = $ARR;
+            $this->设置UID权限($分组, $UID, $ARR);
         }
 
     }
@@ -400,7 +498,7 @@ class cla_project
         # 2 . 在这里判断 权限
         #
 
-        if (strlen($name) > SYS:$项目名_长度) {
+        if (strlen($name) > SYS::$项目名_长度) {
             $GLOBALS['RET']->错误终止_end('项目名超长');
         }
         $this->DAT['name'] = $name;
@@ -419,9 +517,22 @@ class cla_project
         #
         # 2 . 在这里判断 权限
         #
-        if (strlen($name) > SYS:$分组名_长度) {
+        if (strlen($name) > SYS::$分组名_长度) {
             $GLOBALS['RET']->错误终止_end('分组名超长');
         }
         $this->DAT['JSON'][$_SESSION['分组']]['name'] = $name;
     }
+
+    #####################################
+    #
+    #
+    public function getJID()
+    {
+
+        ###############################
+        #
+        #
+        return $this->DAT['JID'];
+    }
+
 }

@@ -7,13 +7,40 @@ include_once "/tools/ret.php";
  */
 class SYS
 {
+
+    public static $DBNL = [
+        'val'    => 'val',
+        'openid' => 'openid',
+        'user'   => 'user',
+        'pro'    => 'projoct',
+        'work'   => 'pro_work',
+    ];
+
+    ##############################
+    # 调试
+    #
+    public static $调试 = true;
+
     ##############################
     # 超级管理员
     # 1 . 拥有 '系统管理员' 的权限
     # 2 . 新建 project (项目)
     # 3 . 设定 '系统管理员'
     #
-    public static $adminOpenID = '';
+    public static $adminOpenID =
+        'r-aMG0QJ1HnNF6qEuXFejfSG0miw';
+
+    ##############################
+    # 一个特殊的<邀请码>
+    # 用于 系统初始化
+    #
+    public static $初始化码 = '345';
+    public static $清除数据 = '777';
+
+    ##############################
+    # 存储 已经读取的 cla_obj
+    #
+    public static $BUF = [];
 
     ##############################
     #
@@ -39,15 +66,28 @@ class SYS
 
     ];
 
+    public static function 初始化JSON()
+    {
+        SYS::setJSON('管理员IDArr', []);
+
+    }
     public static function getJSON($n)
     {
-        $sql = "SELECT JSON  FROM val  where name = '" . $n . "'";
+        $b = SYS::$DBNL['val'];
+
+        $sql = "SELECT JSON  FROM " . $b
+            . "  where name = '" . $n . "'";
 
         $d = SDB::SQL($sql);
 
         if (SDB::$notFind) {
-            $GLOBALS['RET']->错误终止_end('val 无效');
-            exit();
+
+            $s = ' VAL 无效';
+            if (SYS::$调试) {
+                $s = $n . $s;
+            }
+
+            $GLOBALS['RET']->错误终止_end($s);
         }
         return $d['JSON'];
 
@@ -56,7 +96,7 @@ class SYS
     public static function setJSON($n, $v)
     {
         $d = [
-            'name'  => 'val',
+            'name'  => SYS::$DBNL['val'],
             'DAT'   => [
                 'JSON' => $v,
             ],
@@ -100,7 +140,7 @@ class SYS
             return true;
         }
     }
-    
+
     ##############################
     #  增加 一个系统管理员
     #
@@ -109,7 +149,7 @@ class SYS
         $a   = SYS::getJSON('管理员IDArr');
         $a[] = $UID;
 
-        SYS::setJSON('管理员IDArr', $a);
+        SYS::setJSON('管理员IDArr', array_unique($a));
     }
 
     ##############################

@@ -17,13 +17,14 @@
 #
 
 include_once "/tools/ret.php";
-include_once "tools/sys.php";
-include_once "/class/cla_openid.php";
-
-include_once "/class/set_session.php";
+include_once "/tools/sys.php";
 include_once "/tools/begin.php";
 
-SYS::参数检查(['code', 'in', 'username']);
+include_once "/class/cla_openid.php";
+include_once "/class/cla_in.php";
+include_once "/class/set_session.php";
+
+SYS::参数检查_end(['code', 'in', 'username']);
 
 #####################################
 # 获取 openid
@@ -35,11 +36,21 @@ $openCla = cla_openid::getByCode_end($_POST['code']);
 #####################################
 # 系统初始化 , 不用管 '邀请码'
 #
-if ($openCla->还没注册()) {
-    if ($openCla->is超级()) {
+
+if ($openCla->is超级()) {
+
+    if ($_POST['in'] == SYS::$初始化码) {
+
         BEGIN::新建超级管理员($_POST['username']);
         return;
     }
+
+    if ($_POST['in'] == SYS::$清除数据) {
+
+        BEGIN::清空数据();
+        return;
+    }
+
 }
 
 #####################################
@@ -56,4 +67,5 @@ if ($openCla->还没注册()) {
 ###############################
 # 结束返回
 #
+$RET->登录返回();
 $RET->toStr_end();

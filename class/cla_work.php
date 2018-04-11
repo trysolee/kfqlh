@@ -1,13 +1,27 @@
 <?php
 
-
 include_once "/tools/ret.php";
 include_once '/tools/sdb.php';
 include_once "/tools/sys.php";
 
-
-class cla_work
+class cla_work  extends sdb_one
 {
+
+    #=====================================
+    #  BUF 设置
+    #
+    private static $BOX = [];
+    public static function addBUF($obj)
+    {
+        cla_work::$BOX[$obj->ID()] = $obj;
+    }
+    public static function saveBUF()
+    {
+        foreach (cla_work::$BOX as
+            $key => $value) {
+            $value->save();
+        }
+    }
 
     #=====================================
     # 获取一个 work by ID

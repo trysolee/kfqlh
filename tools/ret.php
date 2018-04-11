@@ -12,14 +12,11 @@ class ret
 
     private static $table = 'kfqlh';
 
-    // private $UID   = 1;
-    // private $LT    = '2018-01-10'; // 这个来自 sessio ; 用户最后登陆的时间
-    // private $day10 = '2018-01-01'; // 当天 的 10天前
-    // private $role  = ['管理员', '巡查'];
-
     private $STEP = [];
     private $DAT  = [];
     private $OPT  = [];
+
+    private $返回user数据 = false;
 
     #####################################
     # 如果 有不明错误 , 只返回 $OPT
@@ -30,6 +27,11 @@ class ret
     {
         // $this->RET['DAT'] = $this->DAT;
         // $this->RET['OPT'] = $this->OPT;
+    }
+
+    public function 登录返回()
+    {
+        $this->返回user数据 = true;
     }
 
     private function SQL同一个JID()
@@ -43,54 +45,8 @@ class ret
 
         $arr   = [];
         $arr[] = [
-            'sql' => "SELECT *"
-            . " FROM  pro_work "
-            . " WHERE JID = " . $JID
-            . " AND FT > '" . $LT . "'"
-            . " AND CT > '" . $day10 . "'"
-            . " LIMIT 0 , 30",
-        ];
+            'name' => 'work',
 
-        $j = cla_project::getByID($JID);
-
-        $arr[] = [
-            'sql' => "SELECT *"
-            . " FROM  pro_work "
-            . " WHERE JID = " . $JID
-            . " AND FT > '" . $LT . "'"
-            . " AND CT > '" . $day10 . "'"
-            . " LIMIT 0 , 30",
-        ];
-
-    }
-    private function SQL换了JID()
-    {
-
-    }
-    private function SQL()
-    {
-
-        // $UID   = $this->UID;
-        // $LT    = $this->LT;
-        // $day10 = $this->day10;
-        // $role  = $this->role;
-
-        $UID    = $_SESSION["UID"];
-        $LT     = $_SESSION["LT"];
-        $day10  = $_SESSION["day10"];
-        $role   = $_SESSION["role"];
-        $JID    = $_SESSION["JID"];
-        $分组 = $_SESSION["分组"];
-
-        // 如果 换了 项目 , 需要重新上传数据
-        $上次JID = $_SESSION["上次JID"];
-
-        $arr   = [];
-        $arr[] = [
-            'id'   => 'pro_work',
-            'name' => 'pro_work',
-            'step' => ['user'], // 跳过 指定的<id>
-            'role' => [], // 0 : 无限制
             'sql'  => "SELECT *"
             . " FROM  pro_work "
             . " WHERE JID = " . $JID
@@ -99,71 +55,79 @@ class ret
             . " LIMIT 0 , 30",
         ];
 
-        return [
-            [
-                'id'   => 'pro_work',
-                'name' => 'pro_work',
-                'step' => ['user'], // 跳过 指定的<id>
-                'role' => [], // 0 : 无限制
-                'sql'  => "SELECT *"
-                . " FROM  pro_work "
-                . " WHERE JID = " . $JID
-                . " AND FT > '" . $LT . "'"
-                . " AND CT > '" . $day10 . "'"
-                . " LIMIT 0 , 30",
-            ], [
-                'id'   => 'user',
-                'name' => 'user',
-                'step' => [],
-                'role' => [], // 0 : 无限制
-                'sql'  => "SELECT DISTINCT c.*  FROM  "
-                . "pro_user as a , pro_user as b , user as c  "
-                . "where a.UID = " . $UID . "  "
-                . "and a.JID = b.JID  "
-                . "and b.UID = c.UID  "
-                . "and c.FT > '" . $LT . "'"
-                . " LIMIT 0, 30 ",
-            ], [
-                'id'   => 'projoct',
-                'name' => 'projoct',
-                'step' => [],
-                'role' => [], // 0 : 无限制
-                'sql'  => "SELECT b.* "
-                . " FROM pro_user as a , projoct as b   "
-                . " where a.UID = " . $UID . "  "
-                . " and a.JID = b.JID  "
-                . " and c.FT > '" . $LT . "'"
-                . " LIMIT 0, 30 ",
-            ], [
-                'id'   => 'pro_user',
-                'name' => 'pro_user',
-                'step' => [],
-                'role' => [], // 0 : 无限制
-                'sql'  => "SELECT b.*"
-                . " FROM  pro_user as a , pro_user as b , projoct as c  "
-                . " where a.UID = " . $UID . "  "
-                . " and a.JID = b.JID  "
-                . " and a.JID = c.JID  "
-                . " and c.FT > '" . $LT . "'"
-                . " LIMIT 0, 30 ",
-            ],
+        $arr[] = [
+            'name' => 'projoct',
+
+            'sql'  => "SELECT *"
+            . " FROM  projoct "
+            . " WHERE JID = " . $JID
+            . " AND FT > '" . $LT . "'",
         ];
+
+        return $arr;
+    }
+    private function SQL换了JID()
+    {
+        $UID    = $_SESSION["UID"];
+        $LT     = $_SESSION["LT"];
+        $day10  = $_SESSION["day10"];
+        $role   = $_SESSION["role"];
+        $JID    = $_SESSION["JID"];
+        $分组 = $_SESSION["分组"];
+
+        $arr   = [];
+        $arr[] = [
+            'name' => 'work',
+
+            'sql'  => "SELECT *"
+            . " FROM  pro_work "
+            . " WHERE JID = " . $JID
+            . " AND CT > '" . $day10 . "'"
+            . " LIMIT 0 , 30",
+        ];
+
+        $arr[] = [
+            'name' => 'projoct',
+
+            'sql'  => "SELECT *"
+            . " FROM  projoct "
+            . " WHERE JID = " . $JID,
+        ];
+
+        return $arr;
+    }
+    private function SQL()
+    {
+        if ($_SESSION['JID_LT'] == $_SESSION['JID']) {
+            $a = $this->SQL同一个JID();
+        } else {
+            $a = $this->SQL换了JID();
+        }
+
+        if ($this->返回user数据) {
+            $arr[] = [
+                'name' => 'user_my',
+
+                'sql'  => "SELECT *"
+                . " FROM  user "
+                . " WHERE UID = " . $_SESSION["UID"],
+            ];
+        }
     }
 
-// 判断 两个 Array 有没有重合的元素
+    // 判断 两个 Array 有没有重合的元素
     private function exists($a, $b)
     {
         if (count(array_intersect($a, $b)) > 0) {
             return true;
         }
-
         return false;
     }
 
     private function select($name, $sql)
     {
 
-// 查询数据到数组中
+        // 查询数据到数组中
         // $result = mysql_query("select UID ,name ,phone  from user ");
         $result = mysql_query($sql);
 
@@ -202,25 +166,16 @@ class ret
         mysql_select_db(ret::$table, $link) or die("Unable to connect to the MySQL!");
 
         foreach ($this->SQL() as $value) {
-
-            if (in_array($value['id'], $this->STEP)) {
-                continue;
-            }
-
-            if ($this->exists($value['role'], $this->role)) {
-                $this->select($value['name'], $value['sql']);
-
-                $this->STEP = array_unique(array_merge($this->STEP, $value['step']));
-            }
+            $this->select($value['name'], $value['sql']);
         }
 
         mysql_close($link);
 
-        $_SESSION["user"]['LT'] = date('Y-m-d H:i:s');
+        $_SESSION['LT'] = date('Y-m-d H:i:s');
 
     }
 
-    public function setOPT($name = '', $val)
+    public function setOPT($name, $val)
     {
         $this->OPT[$name] = $val;
     }
@@ -231,7 +186,8 @@ class ret
         #=====================================
         #  标记最后连接的时间
         #
-        $_SESSION['LT'] = strtotime('now');
+        $_SESSION['LT']     = strtotime('now');
+        $_SESSION['JID_LT'] = $_SESSION['JID'];
 
         $RET = [
             'OPT' => $this->OPT,
@@ -240,11 +196,15 @@ class ret
         // 将数组转成json格式
         echo json_encode($RET, JSON_UNESCAPED_UNICODE);
         //
+        exit();
     }
 
     public function 还没注册_end()
     {
-        # TODO
+        $this->setOPT('ERR', '90');
+        $this->setOPT('MSG', '还没注册');
+
+        $this->toStr_end();
     }
 
     ################################
@@ -254,10 +214,10 @@ class ret
     #
     public function 参数不全_end()
     {
-        # TODO
-        #
-        # 属于 '不明错误'
-        #
+        $this->setOPT('ERR', '90');
+        $this->setOPT('MSG', '参数不全');
+
+        $this->toStr_end();
     }
 
     ################################
@@ -271,10 +231,10 @@ class ret
     #
     public function 不是管理员_end()
     {
-        # TODO
-        #
-        # 属于 '不明错误'
-        #
+        $this->setOPT('ERR', '90');
+        $this->setOPT('MSG', '参数不全');
+
+        $this->toStr_end();
     }
 
     ################################
@@ -282,10 +242,10 @@ class ret
     #
     public function codeERR_end()
     {
-        # TODO
-        #
-        # 属于 '不明错误'
-        #
+        $this->setOPT('ERR', '90');
+        $this->setOPT('MSG', '微信登录失败');
+
+        $this->toStr_end();
     }
 
     ################################
@@ -293,9 +253,10 @@ class ret
     #
     public function ID无效_end($表名)
     {
-        # TODO
-        #g
-        #
+        $this->setOPT('ERR', '90');
+        $this->setOPT('MSG', 'ID无效');
+
+        $this->toStr_end();
     }
 
     ################################
@@ -303,9 +264,7 @@ class ret
     #
     public function 返回邀请码($INID)
     {
-        # TODO
-        #
-        #
+        $this->setOPT('INID', $INID);
     }
 
     ################################
@@ -313,9 +272,10 @@ class ret
     #
     public function 错误终止_end($TXT)
     {
-        # TODO
-        #
-        #
+        $this->setOPT('ERR', '93');
+        $this->setOPT('MSG', $TXT);
+
+        $this->toStr_end();
     }
 }
 

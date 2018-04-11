@@ -11,7 +11,7 @@ class Session
     public static function set($user, $openid)
     {
 
-        if ($user->OK) {
+        if ($user->isOK()) {
             #
             # 有 user 数据 ( 已经注册 )
             ###############################
@@ -19,7 +19,7 @@ class Session
             ###############################
             # 记录 UID , day10
             #
-            $UID = $_SESSION["UID"] = $user->getUID();
+            $UID            = $_SESSION["UID"]            = $user->getUID();
             $_SESSION["LT"] = $user->getLT();
             #
             $_SESSION['day10'] = date('Y-m-d', strtotime('-10 day'));

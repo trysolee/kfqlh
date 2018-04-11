@@ -32,8 +32,8 @@ class cla_in
         ];
 
         ###############################
-        # insert 
-        # 
+        # insert
+        #
         # 记录 insertID
         #
         SDB::insert($dat);
@@ -98,12 +98,18 @@ class cla_in
         #
         # 创建一个 user
         #
+        $JID       = $this->DAT['JSON']['JID'];
+        $分组    = $this->DAT['JSON']['分组'];
+        $邀请人 = $this->DAT['JSON']['UID'];
+
+        $openid = $openCla->getOpenID();
+
         $u = cla_user::newOne(
             $userName,
-            $this->DAT['JSON']['JID'],
-            $this->DAT['JSON']['分组'],
-            $this->DAT['JSON']['UID'],
+            $JID,
+            $分组
         );
+        Session::set($u, $openid);
 
         #####################################
         # 用 openid , UID
@@ -111,8 +117,8 @@ class cla_in
         # 创建一个 openid CLASS
         #
         $o = cla_openid::newOne(
-            $openCla->getOpenID(),
-            $u->getUID();
+            $openid,
+            $u->getUID()
         );
 
         #####################################
@@ -120,32 +126,31 @@ class cla_in
         #
         # 把 UID 加入到指定'分组'
         #
-        $j = cla_project::getByID(
-            $this->DAT['JSON']['JID']
-        );
-        $j->加入分组($this->DAT['JSON']['分组'],
-            $u->getUID()
+        $j = cla_project::getByID($JID);
+        $j->被邀请进入分组(
+            $u->getUID(),
+            $userName,
+            $分组,
+            $邀请人
         );
 
-        Session::set($u, $o->getOpenID());
     }
 
     #####################################
     #
     #
-    public function 二次邀请($openCla)
+    public function 二次邀请($openCla, $userName)
     {
+        $JID       = $this->DAT['JSON']['JID'];
+        $分组    = $this->DAT['JSON']['分组'];
+        $邀请人 = $this->DAT['JSON']['UID'];
+
         #####################################
         # 通过 openid 找到 user
         #
-        # 设置 user 里面的数据
-        # 添加新的分组 ( user 修改 )
-        #
         $u = $openCla->getUser();
-        $u->add成员(
-            $this->DAT['JSON']['JID'],
-            $this->DAT['JSON']['分组']
-        );
+        $u->加入项目($JID);
+        $u->set当前项目分组($JID, $分组);
 
         #####################################
         # 通过 JID 找到 project
@@ -153,12 +158,20 @@ class cla_in
         # 设置 project 里面的数据
         # 在对应的分组里面 添加成员
         #
-        $j = cla_project::getByID(
-            $this->DAT['JSON']['JID']
-        );
-        $j->加入分组($this->DAT['JSON']['分组'],
-            $u->getUID()
-        );
+        $j = cla_project::getByID($JID);
+
+        ###############################
+        # 需要避免 二次扫描
+        # 把前面设置好的权限 冲掉了
+        #
+        if (!$j->他是成员($分组, $u->getUID())) {
+            $j->被邀请进入分组(
+                $u->getUID(),
+                $userName,
+                $分组,
+                $邀请人
+            );
+        }
 
         Session::set($u, $openCla->getOpenID());
     }

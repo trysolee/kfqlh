@@ -2,16 +2,27 @@
 
 include_once "/tools/ret.php";
 include_once '/tools/sdb.php';
+include_once '/tools/sdb_one.php';
 include_once '/tools/begin.php';
 include_once "/tools/sys.php";
 
-class cla_user
+class cla_user extends sdb_one
 {
-
     #=====================================
-    # 各种 static function OK or Not
+    #  BUF 设置
     #
-    public static $isOK = false;
+    private static $BOX = [];
+    public static function addBUF($obj)
+    {
+        cla_user::$BOX[$obj->ID()] = $obj;
+    }
+    public static function saveBUF()
+    {
+        foreach (cla_user::$BOX as
+            $key => $value) {
+            $value->save();
+        }
+    }
 
     #=====================================
     # 获取一个 user (自己)
@@ -26,6 +37,11 @@ class cla_user
     #
     public static function getByID($UID)
     {
+
+        if (!empty(cla_user::$BOX[$UID])) {
+            return cla_user::$BOX[$UID];
+        }
+
         $o = new cla_user();
 
         $sql = "SELECT * FROM  user "
@@ -36,6 +52,9 @@ class cla_user
             $GLOBALS['RET']->ID无效_end('cla_user');
             exit();
         }
+        $o->OK = true;
+
+        cla_user::addBUF($o);
         return $o;
     }
 
@@ -56,32 +75,27 @@ class cla_user
 
         $u->DAT = SDB::SQL($sql);
         $u->OK  = !SDB::$notFind;
+
+        cla_user::addBUF($u);
+        return $u;
     }
 
     #=====================================
     # 创建 一个 user
     #
     public static function newOne($userName,
-        $JID, $分组, $UID) {
+        $JID, $分组) {
         $t = strtotime('now');
 
         $dat = [
             'name' => 'user',
             'DAT'  => [
                 'name' => $userName,
-                #####################
-                # JID 不放入 JSON
-                # 是为了方便 select 返回数据
-                #
-                'JID'  => $JID, # 当前项目
+
                 'JSON' => [
+                    'JID'  => $JID, # 当前项目
                     '分组'   => $分组, # 当前分组
-                    'JIDs' => [
-                        $JID => [
-                            '分组'       => [$分组],
-                            'inUserID' => $UID, # 介绍人
-                        ],
-                    ],
+                    'JIDs' => [$JID],
                 ],
                 'FT'   => $t,
                 'LT'   => $t,
@@ -99,6 +113,11 @@ class cla_user
 
         $o      = new cla_user();
         $o->DAT = $D;
+
+        $o->OK = true;
+
+        cla_user::addBUF($o);
+        return $o;
     }
 
     #=====================================
@@ -107,7 +126,18 @@ class cla_user
     #
     #=====================================
 
-    public $DAT;
+    public function _DB()
+    {
+        return 'user';
+    }
+    public function ID()
+    {
+        return $this->DAT['UID'];
+    }
+    public function ID_name()
+    {
+        return 'UID';
+    }
 
     private $OK = false;
     #####################################
@@ -116,14 +146,6 @@ class cla_user
     public function isOK()
     {
         return $this->OK;
-    }
-
-    #=====================================
-    #
-    #
-    public function get当前项目ID()
-    {
-        return $this->DAT['JID'];
     }
 
     #=====================================
@@ -141,6 +163,30 @@ class cla_user
     #=====================================
     #
     #
+    public function 加入项目($JID)
+    {
+        $a   = &$this->DAT['JSON']['JIDs'];
+        $a[] = $JID;
+        $a   = array_unique($a);
+    }
+    public function 离开项目($JID)
+    {
+        $a = &$this->DAT['JSON']['JIDs'];
+        $a = array_diff($a, [$JID]);
+    }
+
+    #=====================================
+    #
+    #
+    public function get当前项目ID()
+    {
+        return $this->DAT['JSON']['JID'];
+
+    }
+
+    #=====================================
+    #
+    #
     public function get当前分组()
     {
         return $this->DAT['JSON']['分组'];
@@ -148,101 +194,10 @@ class cla_user
 
     public function set当前项目分组($JID, $分组)
     {
-        # code...
-        #
-        # 先判断 自己 是不是
-        # 这个项目.分组的成员
-        # ( 在user 里面 有保存相关数据 )
-        # 直接调用 is成员() 就OK
-        #
-        if ($this->is成员($JID, $分组)) {
-            $this->DAT['JID']            = $JID;
-            $this->DAT['JSON']['分组'] = $分组;
-        }
 
-    }
+        $this->DAT['JSON']['JID']    = $JID;
+        $this->DAT['JSON']['分组'] = $分组;
 
-    #=====================================
-    #
-    #
-    public function is成员($JID, $分组)
-    {
-        # #######################
-        #
-        # 当遇到 '超级管理员' 或 '系统管理员'
-        # 返回 true
-        #
-        if (SYS::is系统管理员()) {
-            return true;
-        }
-
-        if (empty($this->DAT['JSON']
-            ['JIDs']
-            [$JID]
-            ['分组']
-            [$分组])) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public function add成员($JID, $分组, $inUID)
-    {
-        # code...
-        #
-        # 把自己 加入到
-        # 某个项目.分组 里面
-        # ( 处理 user里面的数据 )
-        #
-        if (empty($this->DAT['JSON']
-            ['JIDs']
-            [$JID])) {
-
-            $this->DAT['JSON']
-            ['JIDs']
-            [$JID] = [
-                '分组'       => [$分组],
-                'inUserID' => $inUID, # 介绍人
-            ];
-        } else {
-            $arr = &$this->DAT['JSON']
-                ['JIDs']
-                [$JID]
-                ['分组'];
-
-            if (empty($arr[$分组])) {
-                array_push($arr, $分组);
-            }
-        }
-    }
-
-    public function remove成员($JID, $分组)
-    {
-        # code...
-        #
-        # 把自己
-        # 移出 某个项目.分组
-        # ( 处理 user里面的数据 )
-        #
-        if (empty($this->DAT['JSON']
-            ['JIDs']
-            [$JID]
-            ['分组']
-            [$分组])) {
-
-            $arr = &$this->DAT['JSON']
-                ['JIDs']
-                [$JID]
-                ['分组'];
-
-            unset($arr[$分组]);
-            if (count($arr) <= 0) {
-                unset($this->DAT['JSON']
-                    ['JIDs']
-                    [$JID]);
-            }
-        }
     }
 
     public function getUID()

@@ -3,8 +3,24 @@
 include_once '/tools/sdb.php';
 include_once "/tools/ret.php";
 
-class cla_pic
+class cla_pic extends sdb_one
 {
+
+    #=====================================
+    #  BUF 设置
+    #
+    private static $BOX = [];
+    public static function addBUF($obj)
+    {
+        cla_pic::$BOX[$obj->ID()] = $obj;
+    }
+    public static function saveBUF()
+    {
+        foreach (cla_pic::$BOX as
+            $key => $value) {
+            $value->save();
+        }
+    }
 
     #=====================================
     # 获取一个 user by ID
@@ -19,7 +35,6 @@ class cla_pic
         $o->DAT = SDB::SQL($sql);
         if (SDB::$notFind) {
             $GLOBALS['RET']->ID无效_end('cla_pic');
-            exit();
         }
         return $o;
     }

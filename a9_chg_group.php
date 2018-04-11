@@ -15,8 +15,15 @@ include_once "/class/cla_user.php";
 #
 SYS::参数检查_end(['JID', 'group']);
 
-$u = cla_user::getMyself();
-$u->set当前项目分组($_POST['JID'], $_POST['group']);
+$JID    = $_POST['JID'];
+$分组 = $_POST['group'];
+$UID    = $_SESSION['UID'];
+
+$j = cla_project::getByID($JID);
+if ($j->他是成员($分组, $UID)) {
+    $u = cla_user::getByID($UID);
+    $u->set当前项目分组($JID, $分组);
+}
 
 ###############################
 # 结束返回
