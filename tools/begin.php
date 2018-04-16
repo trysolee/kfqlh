@@ -54,13 +54,9 @@ class BEGIN
 
     public static function 清空数据()
     {
-        $a = &SYS::$DBNL;
-        SDB::exec('DELETE FROM ' . $a['val']);
-        SDB::exec('DELETE FROM ' . $a['user']);
-        SDB::exec('DELETE FROM ' . $a['pro']);
-        SDB::exec('DELETE FROM ' . $a['work']);
-        SDB::exec('DELETE FROM ' . $a['openid']);
-
+        foreach (SYS::$DBNL as $v) {
+            SDB::exec('DELETE FROM ' . $v);
+        }
     }
 
     ###########################
@@ -94,6 +90,9 @@ class BEGIN
             $分组
         );
         $UID = $u->getUID();
+
+        // SYS::KK('UID');
+        // SYS::KK($UID);
 
         $o = cla_openid::newOne(
             SYS::$adminOpenID,

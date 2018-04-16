@@ -21,6 +21,10 @@ $j->我是管理员_end();
 $UIDs = json_decode($_POST['ARR'], true);
 
 foreach ($UIDs as $key => $value) {
+
+    // SYS::KK('key', $key);
+    // SYS::KK('value', $value);
+
     $j->fix某人权限($key, $value);
 }
 

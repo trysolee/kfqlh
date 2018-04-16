@@ -21,11 +21,189 @@
                 初始化
             </button>
         </p>
-         <p>
-            <button onclick="wait()" type="button">
-                ,....
+        <p>
+            <button onclick="sys()" type="button">
+                == 当前状态 ===
             </button>
         </p>
+        <p>
+            --------------------
+        </p>
+        <p>
+            <button onclick="login_admin()" type="button">
+                管理员 登录
+            </button>
+        </p>
+        <p>
+            <button onclick="set_sys_admin()" type="button">
+                设置 系统 管理员
+            </button>
+            UID :
+            <input id="UID1" type="text">
+            </input>
+        </p>
+        <p>
+            <button onclick="remove_sys_admin()" type="button">
+                删除 系统 管理员 del
+            </button>
+            UID :
+            <input id="UID2" type="text">
+            </input>
+        </p>
+        <p>
+            <button onclick="login_user()" type="button">
+                user 登录
+            </button>
+        </p>
+        <p>
+            --------------------
+        </p>
+        <p>
+            <button onclick="fix_pro_name()" type="button">
+                修改项目名称
+            </button>
+            (当前)项目名称 :
+            <input id="JN2" type="text">
+            </input>
+        </p>
+        <p>
+            <button onclick="fix_group_name()" type="button">
+                修改分组的名称
+            </button>
+            (当前)项目.分组名称 :
+            <input id="JN3" type="text">
+            </input>
+        </p>
+        <p>
+            <button onclick="chg_group()" type="button">
+                更换到 项目分组
+            </button>
+            JID :
+            <input id="JID1" type="text">
+            </input>
+            分组 :
+            <input id="FZ1" type="text" value="甲方">
+            </input>
+        </p>
+        <p>
+            <button onclick="fix_group()" type="button">
+                修改 甲方分组 人员权限
+            </button>
+            <textarea cols="50" id="R1" rows="10">
+                {
+"46": ["甲方巡查", "管理员"]
+}
+            </textarea>
+        </p>
+        <p>
+            "监理" ["管理员", "监理巡查", "监理浏览", "监理维护"],
+        </p>
+        <p>
+            "施工" ["管理员", "施工日常", "施工处理", "施工维护"],
+        </p>
+        <p>
+            "甲方" ["管理员", "甲方巡查"],
+        </p>
+        <p>
+            --------------------
+        </p>
+        <p>
+            (当前)项目.分组
+            <button onclick="new_login_in()" type="button">
+                发出邀请
+            </button>
+        </p>
+        <p>
+            <button onclick="user_login_in()" type="button">
+                user 接收邀请
+            </button>
+            邀请号 :
+            <input id="INID1" type="text">
+            </input>
+        </p>
+        <p>
+            --------------------
+        </p>
+        <p>
+            (当前)项目.分组
+            <button onclick="new_work()" type="button">
+                发布 work
+            </button>
+            标签 :
+            <input id="WT1" type="text">
+            </input>
+        </p>
+        <p>
+            监理 ["100002", "100017"]
+        </p>
+        <p>
+            甲方 ["600001", "600002"]
+        </p>
+        <p>
+            施工 ["110", "115"]
+        </p>
+        <p>
+            修改 work 的 标签
+            <button onclick="fix_WT()" type="button">
+                修改 标签
+            </button>
+            WID :
+            <input id="WID3" type="text">
+            </input>
+            标签 :
+            <input id="WT2" type="text">
+            </input>
+        </p>
+        <p>
+            --------------------
+        </p>
+        <form action="a9_up_work.php" enctype="multipart/form-data" method="POST">
+            <input name="lo" type="hidden" value="23333"/>
+            <input name="la" type="hidden" value="25555"/>
+            <p>
+                WID :
+                <input name="WID" type="text">
+                </input>
+            </p>
+            <p>
+                Send this File :
+                <input name="file" type="file"/>
+                <input type="submit" value="Send File"/>
+            </p>
+        </form>
+        <p>
+            --------------------
+        </p>
+        <form action="a9_up_work.php" enctype="multipart/form-data" method="POST">
+            <p>
+                WID :
+                <input name="WID" type="text">
+                </input>
+            </p>
+            <p>
+                文字 :
+                <input name="TXT" type="text">
+                </input>
+            </p>
+            <input type="submit" value="发送"/>
+        </form>
     </body>
+    <p>
+        --------------------
+    </p>
+    <form action="a9_new_work.php" enctype="multipart/form-data" method="POST">
+        <input name="lo" type="hidden" value="23333"/>
+        <input name="la" type="hidden" value="25555"/>
+        <input name="TXT" type="hidden" value="文字一起上"/>
+        <p>
+            WT :
+            <input name="WT" type="text">
+            </input>
+        </p>
+        <p>
+            Send this File :
+            <input name="file" type="file"/>
+            <input type="submit" value="图片文字一起上"/>
+        </p>
+    </form>
 </html>
-

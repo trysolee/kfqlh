@@ -42,12 +42,18 @@ if ($openCla->is超级()) {
     if ($_POST['in'] == SYS::$初始化码) {
 
         BEGIN::新建超级管理员($_POST['username']);
+        SYS::KK('新建超级管理员ok', ' ');
+
+        $RET->登录返回();
+        $RET->toStr_end();
         return;
     }
 
     if ($_POST['in'] == SYS::$清除数据) {
 
         BEGIN::清空数据();
+
+        SYS::KK('清空数据ok', ' ');
         return;
     }
 
@@ -56,12 +62,15 @@ if ($openCla->is超级()) {
 #####################################
 # 获取'邀请码' 对象
 #
+
+SYS::KK('接收到的in', $_POST['in']);
+
 $IN = cla_in::getByIN_end($_POST['in']);
 
 if ($openCla->还没注册()) {
     $IN->首次邀请($openCla, $_POST['username']);
 } else {
-    $IN->二次邀请($openCla);
+    $IN->二次邀请($openCla, $_POST['username']);
 }
 
 ###############################

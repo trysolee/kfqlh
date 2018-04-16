@@ -15,22 +15,6 @@ include_once "/tools/sys.php";
 class cla_project extends sdb_one
 {
 
-    #=====================================
-    #  BUF 设置
-    #
-    private static $BOX = [];
-    public static function addBUF($obj)
-    {
-        cla_project::$BOX[$obj->ID()] = $obj;
-    }
-    public static function saveBUF()
-    {
-        foreach (cla_project::$BOX as
-            $key => $value) {
-            $value->save();
-        }
-    }
-
     #############################
     # 巡查系统框架
     #
@@ -103,67 +87,25 @@ class cla_project extends sdb_one
             // 邀请人员时 , 新建的权限
             'roleNEW' => ['监理浏览'],
             'role'    => ['管理员', '监理浏览'],
-            'user'    => [
-            ],
+            'user'    => [],
+            'WT'      => [],
         ],
 
     ];
 
-    #
-    # 发布 'pic' ( 图片 ) 的权限判定
-    private static $CR_NPic = [
-        '监理巡查',
-        '施工日常',
-        '甲方巡查',
-    ];
-
-    #
-    # 发布 'txt' ( 文字 ) 的权限判定
-    private static $CR_NTxt = [
-        '监理巡查',
-        '施工日常',
-        '甲方巡查',
-    ];
-
-    #
-    #  新建 'work' ( 工作贴 ) 的权限判定
-    private static $CR_NWork = [
-        '监理巡查',
-        '施工日常',
-        '甲方巡查',
-    ];
-
-    #=====================================
-    # 新建 'work' ( 工作贴 ) 的权限判定
-    #
-    # true => 有权限
-    # false => 没有权限
-    #
-    public static function CR_newWork()
+    public static function 标签合法_end($分组, $标签)
     {
-        # code...
-    }
 
-    #=====================================
-    # 发布 'pic' ( 图片 ) 的权限判定
-    #
-    # true => 有权限
-    # false => 没有权限
-    #
-    public static function CR_newPic()
-    {
-        # code...
-    }
+        // SYS::KK(' get 分组', $分组);
 
-    #=====================================
-    # 发布 'txt' ( 文字 ) 的权限判定
-    #
-    # true => 有权限
-    # false => 没有权限
-    #
-    public static function CR_newTxt()
-    {
-        # code...
+        $a = array_keys(cla_project::$FK[$分组]['WT']);
+
+        $b = array_diff($标签, $a);
+
+        if (count($b) > 0) {
+            $GLOBALS['RET']->错误终止_end('非法标签');
+            exit();
+        }
     }
 
     #=====================================
@@ -173,50 +115,33 @@ class cla_project extends sdb_one
     public static function newProject($name)
     {
 
-        $t = strtotime('now');
+        $o = new cla_project();
+        $o->_NEW([
+            'JSON' => [
+                '监理' => [
+                    'name' => '监理单位',
+                    'user' => [
 
-        $dat = [
-            'name' => 'projoct',
-            'DAT'  => [
-                'JSON' => [
-                    '监理' => [
-                        'name' => '监理单位',
-                        'user' => [
-
-                        ],
-                    ],
-                    '甲方' => [
-                        'name' => '甲方单位',
-                        'user' => [],
-                    ],
-                    '施工' => [
-                        'name' => '施工单位',
-                        'user' => [],
-                    ],
-                    '临时' => [
-                        'name' => '相关单位',
-                        'user' => [
-                        ],
                     ],
                 ],
-                'name' => $name,
-                'FT'   => $t,
+                '甲方' => [
+                    'name' => '甲方单位',
+                    'user' => [],
+                ],
+                '施工' => [
+                    'name' => '施工单位',
+                    'user' => [],
+                ],
+                '临时' => [
+                    'name' => '相关单位',
+                    'user' => [
+                    ],
+                ],
             ],
-        ];
+            'name' => $name,
+            'FT'   => SYS::$NOW,
+        ]);
 
-        ###############################
-        # insert
-        #
-        # 记录 insertID
-        #
-        SDB::insert($dat);
-        $D        = $dat['DAT'];
-        $D['JID'] = SDB::$insertID;
-
-        $o      = new cla_project();
-        $o->DAT = $D;
-
-        cla_project::addBUF($o);
         return $o;
     }
 
@@ -225,23 +150,8 @@ class cla_project extends sdb_one
     #
     public static function getByID($JID)
     {
-        if (!empty(cla_project::$BOX[$JID])) {
-            return cla_project::$BOX[$JID];
-        }
-
         $o = new cla_project();
-
-        $sql = "SELECT * FROM  projoct "
-            . " where JID = " . $JID;
-
-        $o->DAT = SDB::SQL($sql);
-        if (SDB::$notFind) {
-            $GLOBALS['RET']->ID无效_end('cla_project');
-            exit();
-        }
-        cla_project::addBUF($o);
-
-        return $o;
+        return $o->getObjByID_end($JID);
     }
 
     #=====================================
@@ -260,29 +170,17 @@ class cla_project extends sdb_one
     #
     #=====================================
 
-    public function dbName()
+    public function _DB()
     {
-        return SYS::$DBNL['pro'];
-    }
-    public function ID()
-    {
-        return $this->DAT['JID'];
+        return 'pro';
     }
     public function ID_name()
     {
         return 'JID';
     }
-
-    private $OK = false;
-    #####################################
-    # 判断 上一个操作的 正确性
-    #
-    public function isOK()
+    public function ifFT()
     {
-
-        ###############################
-        # 判断 LT (lastTime) 的 合法性
-        #
+        return true;
     }
 
     #####################################
@@ -302,8 +200,16 @@ class cla_project extends sdb_one
     public function getRoleByUID($UID)
     {
 
-        print_r($this->DAT['JSON']
-            [$_SESSION['分组']]);
+        if (empty($this->DAT['JSON']
+            [$_SESSION['分组']]
+            ['user']
+            [$UID]
+            ['role'])) {
+
+            SYS::KK('没发现 uid', $UID);
+            SYS::KK('分组', $_SESSION['分组']);
+            SYS::KK('DAT = ', $this->DAT);
+        }
 
         ###############################
         #
@@ -327,6 +233,8 @@ class cla_project extends sdb_one
         ['user']
         [$UID]
         ['role'] = $role;
+
+        $this->fixed();
     }
     public function 移去UID权限($分组, $UID)
     {
@@ -334,6 +242,8 @@ class cla_project extends sdb_one
             [$分组]
             ['user']
             [$UID]);
+
+        $this->fixed();
     }
 
     #####################################
@@ -350,14 +260,38 @@ class cla_project extends sdb_one
             'role'   => cla_project::$FK[$分组]['roleNEW'],
             'inUser' => $inUID,
         ];
+        $this->fixed();
     }
 
     #####################################
     #
     #
+    public function 他是成员_end($分组, $UID)
+    {
+
+        if ($this->他是成员($分组, $UID)) {
+            return true;
+        }
+        $GLOBALS['RET']->错误终止_end('不属于项目分组');
+        exit();
+    }
     public function 他是成员($分组, $UID)
     {
-        return empty($this->DAT['JSON']
+
+        // SYS::KK('他是成员1', $分组);
+        // SYS::KK('他是成员1', $UID);
+        // SYS::KK('他是成员1', $this->DAT);
+
+        // if (empty($this->DAT['JSON']
+        //     [$分组]
+        //     ['user']
+        //     [$UID])) {
+        //     SYS::KK('他是成员2', '他不是成员');
+        // } else {
+        //     SYS::KK('他是成员2', '他是成员');
+        // }
+
+        return !empty($this->DAT['JSON']
             [$分组]
             ['user']
             [$UID]
@@ -382,6 +316,9 @@ class cla_project extends sdb_one
             return true;
         }
         if ($this->他是成员('临时', $UID)) {
+            return true;
+        }
+        if (SYS::is系统管理员()) {
             return true;
         }
         return false;
@@ -446,8 +383,8 @@ class cla_project extends sdb_one
         ############################
         # $ARR 必须是 array
         #
-        if (gettype($ARR != 'array')) {
-            $R->错误终止_end('参数不是array(2)');
+        if (!is_array($ARR)) {
+            $GLOBALS['RET']->错误终止_end('参数不是array(2)');
         }
 
         ############################
@@ -483,6 +420,8 @@ class cla_project extends sdb_one
             $this->设置UID权限($分组, $UID, $ARR);
         }
 
+        $this->fixed();
+
     }
 
     #####################################
@@ -503,6 +442,8 @@ class cla_project extends sdb_one
         }
         $this->DAT['name'] = $name;
 
+        $this->fixed();
+
     }
 
     #####################################
@@ -521,6 +462,8 @@ class cla_project extends sdb_one
             $GLOBALS['RET']->错误终止_end('分组名超长');
         }
         $this->DAT['JSON'][$_SESSION['分组']]['name'] = $name;
+
+        $this->fixed();
     }
 
     #####################################

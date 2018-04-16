@@ -5,7 +5,7 @@
 include_once "/tools/sdb.php";
 include_once "/tools/ret.php";
 
-class cla_in
+class cla_in extends sdb_one
 {
 
     #=====================================
@@ -15,34 +15,18 @@ class cla_in
     #
     public static function newOne()
     {
-
-        $t = strtotime('now');
-
-        $dat = [
-            'name' => 'pro_in',
-            'DAT'  => [
-                # INID  ::
-                'JSON' => [
-                    'UID' => $_SESSION['UID'],
-                    'JID' => $_SESSION['JID'],
-                    '分组'  => $_SESSION['分组'],
-                ],
-                'FT'   => $t,
+        $o = new cla_in();
+        $o->_NEW([
+            # INID  ::
+            'JSON' => [
+                'UID' => $_SESSION['UID'],
+                'JID' => $_SESSION['JID'],
+                '分组'  => $_SESSION['分组'],
             ],
-        ];
-
-        ###############################
-        # insert
-        #
-        # 记录 insertID
-        #
-        SDB::insert($dat);
-        $INID = SDB::$insertID;
-
-        ###############################
-        # RET 里面记录 新建的 '邀请码'
-        #
-        $GLOBALS['RET']->返回邀请码($INID);
+            'FT'   => SYS::$NOW,
+        ]);
+        $GLOBALS['RET']->返回邀请码($o->ID());
+        return $o;
     }
 
     #=====================================
@@ -50,15 +34,8 @@ class cla_in
     #
     public static function getByIN_end($INID)
     {
-        $sql = "SELECT *  FROM pro_in  where INID = " . $INID;
-
-        $d      = new cla_in();
-        $d->DAT = SDB::SQL($sql);
-        if (SDB::$notFind) {
-            $GLOBALS['RET']->ID无效_end('cla_IN');
-            exit();
-        }
-        return $d;
+        $o = new cla_in();
+        return $o->getObjByID_end($INID);
     }
 
     #=====================================
@@ -67,15 +44,14 @@ class cla_in
     #
     #=====================================
 
-    private $DAT;
-
-    private $OK = false;
-    #####################################
-    #
-    #
-    public function isOK()
+    public function _DB()
     {
-        return $this->OK;
+        return 'in';
+    }
+
+    public function ID_name()
+    {
+        return 'INID';
     }
 
     #####################################
@@ -109,7 +85,6 @@ class cla_in
             $JID,
             $分组
         );
-        Session::set($u, $openid);
 
         #####################################
         # 用 openid , UID
@@ -134,6 +109,7 @@ class cla_in
             $邀请人
         );
 
+        Session::set($u, $openid);
     }
 
     #####################################
@@ -144,6 +120,8 @@ class cla_in
         $JID       = $this->DAT['JSON']['JID'];
         $分组    = $this->DAT['JSON']['分组'];
         $邀请人 = $this->DAT['JSON']['UID'];
+
+        SYS::KK('二次邀请', 'go');
 
         #####################################
         # 通过 openid 找到 user
@@ -164,7 +142,8 @@ class cla_in
         # 需要避免 二次扫描
         # 把前面设置好的权限 冲掉了
         #
-        if (!$j->他是成员($分组, $u->getUID())) {
+        if (!$j->他是成员($分组, $u->getUID())) {          
+
             $j->被邀请进入分组(
                 $u->getUID(),
                 $userName,

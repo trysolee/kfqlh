@@ -4,9 +4,10 @@ include_once "/tools/sdb.php";
 include_once "/tools/ret.php";
 include_once "/class/get_openid.php";
 
+include_once "/class/cla_user.php";
 # openid
 
-class cla_openid
+class cla_openid extends sdb_one
 {
 
     #=====================================
@@ -15,25 +16,13 @@ class cla_openid
     public static function newOne($openid, $UID)
     {
 
-        $dat = [
-            'name' => 'openid',
-            'DAT'  => [
-                'openid' => $openid,
-                'UID'    => $UID,
+        $o = new cla_openid();
+        $o->_NEW([
+            $o->ID_name() => $openid,
+            'UID'         => $UID,
 
-            ],
-        ];
+        ]);
 
-        ###############################
-        # insert
-        #
-        SDB::insert($dat);
-
-        ###############################
-        # 返回 '对象'
-        #
-        $o      = new cla_openid();
-        $o->DAT = $dat['DAT'];
         return $o;
     }
 
@@ -41,18 +30,16 @@ class cla_openid
     # 当未注册 , 会产生 $notFind = true;
     # 不能当作'错误' 处理
     #
+    # 未注册 时 : isOK() = false;
+    # 为了方便 getOpenID()
+    # 需要把 openid 记录下来
+    #
     public static function getByOpenid($openid)
     {
         $o         = new cla_openid();
-        $o->openID = $openid;
-
-        $sql = "SELECT * FROM  openid "
-            . " where openid = \"" . $openid . "\"";
-
-        $o->DAT = SDB::SQL($sql);
-        $o->OK  = !SDB::$notFind;
-
-        return $o;
+        $d         = $o->getObjByID($openid);
+        $d->openID = $openid;
+        return $d;
     }
 
     #=====================================
@@ -62,14 +49,21 @@ class cla_openid
     public static function getByCode_end($code)
     {
         if (SYS::$调试) {
-            return cla_openid::getByOpenid(SYS::$adminOpenID);
+
+            if ($code == 'user') {
+                return cla_openid::getByOpenid(SYS::$userOpenID);
+            }
+
+            if ($code == 'admin') {
+                return cla_openid::getByOpenid(SYS::$adminOpenID);
+            }
+
         }
 
         openID::get($code);
         if (openID::$OK) {
 
             return cla_openid::getByOpenid(openID::$openid);
-
         } else {
 
             $GLOBALS['RET']->codeERR_end();
@@ -84,13 +78,31 @@ class cla_openid
     #=====================================
     private $openID;
 
-    private $OK = false;
+    public function _DB()
+    {
+        return 'openid';
+    }
+    public function ID_name()
+    {
+        return 'openid';
+    }
+
+    public function ID累加()
+    {
+        // 主键 不累加
+        return false;
+    }
+    public function ID是str()
+    {
+        return true;
+    }
+
     #####################################
     #
     #
     public function 还没注册()
     {
-        return !$this->OK;
+        return !$this->isOK();
     }
 
     #####################################
@@ -98,11 +110,8 @@ class cla_openid
     #
     public function is超级()
     {
-        if (SYS::$调试) {
-            return true;
-        }
 
-        return $this->$openID == SYS::$adminOpenID;
+        return $this->openID == SYS::$adminOpenID;
     }
 
     #####################################
@@ -110,7 +119,7 @@ class cla_openid
     #
     public function getUser()
     {
-        if ($this->OK) {
+        if ($this->isOK()) {
             return cla_user::getByID($this->DAT['UID']);
         }
 
@@ -122,10 +131,6 @@ class cla_openid
     #
     public function getOpenID()
     {
-        if ($this->OK) {
-            return $this->DAT['UID'];
-        }
-
-        return null;
+        return $this->openID;
     }
 }

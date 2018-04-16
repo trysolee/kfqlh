@@ -1,5 +1,7 @@
 <?php
 
+include_once '/tools/sdb_one.php';
+
 class SDB
 {
     private static $ready = false;
@@ -8,6 +10,7 @@ class SDB
     private static $admin = 'root';
     private static $pw    = 'root';
     private static $table = 'kfqlh';
+    private static $link;
 
     public static $dateTimeName =
         ['FT', 'CT', 'LT'];
@@ -28,13 +31,23 @@ class SDB
         $table = SDB::$table;
 
         //连接数据库
-        $link = mysql_connect($URL, $admin, $pw) or die("Unable to connect to the MySQL!");
+        SDB::$link = $link = mysql_connect($URL, $admin, $pw) or die("Unable to connect to the MySQL!");
 
         mysql_query("SET NAMES 'UTF8'");
 
         mysql_select_db($table, $link) or die("Unable to connect to the MySQL!");
 
         SDB::$ready = true;
+    }
+
+    #=====================================
+    # 结束 关闭
+    #
+    public static function _END()
+    {
+        if (SDB::$ready) {
+            mysql_close(SDB::$link);
+        }
     }
 
     public static function exec($sql)
@@ -57,20 +70,23 @@ class SDB
 
         $result = mysql_query($sql);
 
-        // $results = array();
-        if ($row = mysql_fetch_assoc($result)) {
+        if ($result) {
 
-            // print('has ');
+            if ($row = mysql_fetch_assoc($result)) {
 
-            if (array_key_exists('JSON', $row)) {
-                $row['JSON'] = json_decode($row['JSON'], true);
+                if (array_key_exists('JSON', $row)) {
+                    $row['JSON'] = json_decode($row['JSON'], true);
+                }
+
+                SDB::$notFind = false;
+
+                // $row['JSON'] = json_decode($row['JSON'], true);
+
+                return $row;
             }
+        } else {
+            $GLOBALS['RET']->错误终止_end('SDB 1 ' . $sql);
 
-            SDB::$notFind = false;
-
-            // $row['JSON'] = json_decode($row['JSON'], true);
-
-            return $row;
         }
 
         SDB::$notFind = true;
@@ -97,10 +113,12 @@ class SDB
 
         foreach ($k as $a) {
 
-            if (in_array($a, SDB::$dateTimeName)) {
-                $n .= $i . "`" . $a . "`";
-                $v .= $i . "'" . date('Y-m-d H:i:s', $d[$a]) . "'";
-            } elseif ($a == 'JSON') {
+            // if (in_array($a, SDB::$dateTimeName)) {
+            //     $n .= $i . "`" . $a . "`";
+            //     $v .= $i . "'" . date('Y-m-d H:i:s', $d[$a]) . "'";
+            // } elseif ($a == 'JSON') {
+
+            if ($a == 'JSON') {
                 $n .= $i . "`" . $a . "`";
                 $v .= $i . "'" . json_encode($d[$a], JSON_UNESCAPED_UNICODE) . "'";
             } else {
@@ -141,10 +159,12 @@ class SDB
 
         foreach ($k as $a) {
 
-            if (in_array($a, SDB::$dateTimeName)) {
-                $n .= $i . $a . "='" . date('Y-m-d H:i:s', $d[$a]) . "'";
-                // $v .= $i . "'" . date('Y-m-d H:i:s', $d[$a]) . "'";
-            } elseif ($a == 'JSON') {
+            // if (in_array($a, SDB::$dateTimeName)) {
+            //     $n .= $i . $a . "='" . date('Y-m-d H:i:s', $d[$a]) . "'";
+            //     // $v .= $i . "'" . date('Y-m-d H:i:s', $d[$a]) . "'";
+            // } elseif ($a == 'JSON') {
+
+            if ($a == 'JSON') {
                 $n .= $i . $a . "='" . json_encode($d[$a], JSON_UNESCAPED_UNICODE) . "'";
                 // $n .= $i ."`" . $a . "`";
                 // $v .= $i . "'" . json_encode($d[$a], JSON_UNESCAPED_UNICODE) . "'";

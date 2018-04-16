@@ -15,7 +15,9 @@ include_once "tools/ret.php";
 include_once "tools/sys.php";
 include_once "class/set_session.php";
 
-SYS::参数检查(['code']);
+include_once "class/cla_openid.php";
+
+SYS::参数检查_end(['code']);
 
 #####################################
 # 获取 openid
@@ -23,6 +25,10 @@ SYS::参数检查(['code']);
 # 获取 openid失败  自动退出
 #
 $openCla = cla_openid::getByCode_end($_POST['code']);
+
+if ($openCla->还没注册()) {
+    $RET->还没注册_end();
+}
 
 $u = $openCla->getUser();
 Session::set($u, $openCla->getOpenID());

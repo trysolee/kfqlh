@@ -17,12 +17,22 @@ SYS::参数检查_end(['JID', 'group']);
 
 $JID    = $_POST['JID'];
 $分组 = $_POST['group'];
-$UID    = $_SESSION['UID'];
+
+$UID = $_SESSION['UID'];
+$u   = cla_user::getByID($UID);
+
+if (SYS::is系统管理员()) {
+    $u->set当前项目分组($JID, $分组);
+    Session::set当前分组($JID, $分组);
+    $RET->toStr_end();
+    return;
+}
 
 $j = cla_project::getByID($JID);
-if ($j->他是成员($分组, $UID)) {
-    $u = cla_user::getByID($UID);
+if ($j->他是成员_end($分组, $UID)) {
+
     $u->set当前项目分组($JID, $分组);
+    Session::set当前分组($JID, $分组);
 }
 
 ###############################

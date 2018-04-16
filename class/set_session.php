@@ -1,6 +1,7 @@
 <?php
 
 include_once "/tools/sys.php";
+include_once "/tools/val.php";
 
 /**
  *
@@ -8,8 +9,20 @@ include_once "/tools/sys.php";
 class Session
 {
 
+    public static function set当前分组($JID, $分组)
+    {
+        $_SESSION["JID"]    = $JID;
+        $_SESSION["分组"] = $分组;
+
+    }
+
     public static function set($user, $openid)
     {
+        unset($_SESSION['supAdmin']);
+        unset($_SESSION['Admin']);
+
+        // 如果 是 系统管理员 , 不会读取项目的权限
+        $_SESSION["role"] = [];
 
         if ($user->isOK()) {
             #
@@ -28,12 +41,15 @@ class Session
             # 记录 当前项目ID , 当前分组
             #
             $JID = $_SESSION["JID"] = $user->get当前项目ID();
+
+            ###############################
+            # 保证第一次返回数据 ,
+            # 是以 全新项目去 缓存
+            #
+            $_SESSION['JID_LT'] = -1;
+
             #
             $_SESSION["分组"] = $user->get当前分组();
-            #
-            $J                = cla_project::getByID($JID);
-            $_SESSION["role"] = $J->getRole();
-            #
 
             ###############################
             # '超级管理员'
@@ -45,8 +61,12 @@ class Session
             ###############################
             # '系统管理员'
             #
-            if (in_array($UID, SYS::getJSON('管理员IDArr'))) {
+            elseif (in_array($UID, VAL::get('管理员IDArr'))) {
                 $_SESSION['Admin'] = true;
+
+            } else {
+                $J                = cla_project::getByID($JID);
+                $_SESSION["role"] = $J->getRole();
             }
 
         } else {

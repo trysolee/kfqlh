@@ -3,25 +3,11 @@
 include_once "/tools/ret.php";
 include_once '/tools/sdb.php';
 include_once "/tools/sys.php";
+include_once "/class/cla_pic.php";
+include_once "/class/cla_project.php";
 
-class cla_work  extends sdb_one
+class cla_work extends sdb_one
 {
-
-    #=====================================
-    #  BUF 设置
-    #
-    private static $BOX = [];
-    public static function addBUF($obj)
-    {
-        cla_work::$BOX[$obj->ID()] = $obj;
-    }
-    public static function saveBUF()
-    {
-        foreach (cla_work::$BOX as
-            $key => $value) {
-            $value->save();
-        }
-    }
 
     #=====================================
     # 获取一个 work by ID
@@ -29,34 +15,7 @@ class cla_work  extends sdb_one
     public static function getByID($WID)
     {
         $o = new cla_work();
-
-        $sql = "SELECT * FROM  pro_work "
-            . " where WID = " . $WID;
-
-        $o->DAT = SDB::SQL($sql);
-        if (SDB::$notFind) {
-            $GLOBALS['RET']->ID无效_end('cla_project');
-            exit();
-        }
-        return $o;
-    }
-
-    //
-    // 判断 一个 分类数组 [  '断枝清除', '补苗']
-    // 是属于 那种分类 , 如 : '发现异常' , '日常工作'
-    //
-    // 返回的值 赋予 'type'
-    //
-    public static function theType($WT)
-    {
-
-        // 发现异常的 类型
-        $arr = ['110', '113'];
-
-        if (count(array_intersect($WT, $arr)) > 0) {
-            return 1; // 发现异常
-        }
-        return 2; // 日常工作
+        return $o->getObjByID($WID);
     }
 
     //
@@ -65,67 +24,66 @@ class cla_work  extends sdb_one
     public static function newWork($WT)
     {
 
-        $t = strtotime('now');
+        cla_project::标签合法_end(
+            $_SESSION['分组'],
+            $WT);
 
-        $dat = [
-            'name' => 'pro_work', // table
-            'DAT'  => [
-                'JID'  => $_SESSION["JID"],
-                'FT'   => $t,
-                'CT'   => $t,
-                'JSON' => [
+        $o = new cla_work();
+        $o->_NEW([
+            'JID'  => $_SESSION["JID"],
+            'FT'   => SYS::$NOW,
+            'CT'   => SYS::$NOW,
+            'JSON' => [
 
-                    '分组':$_SESSION['分组'],
+                '分组'    => $_SESSION['分组'],
 
-                    // 状态 ,
-                    // 1 :  开放回复 ,
-                    // 2 : 关闭回复
-                    // 3 : 屏蔽 ,
-                    'open'  => 1,
+                // 状态 ,
+                // 1 :  开放回复 ,
+                // 2 : 关闭回复
+                // 3 : 屏蔽 ,
+                'open'  => 1,
 
-                    // 如果: 新建时 没有照片 ,
-                    // 就没有 '经纬度'
-                    //
-                    // 等到有第一张照片 , 就用他的经纬度
-                    //
-                    'lo'    => -1, // 经度 //longitude
-                    'la'    => -1, // 维度 // latitude
+                // 如果: 新建时 没有照片 ,
+                // 就没有 '经纬度'
+                //
+                // 等到有第一张照片 , 就用他的经纬度
+                //
+                'lo'    => -1, // 经度 //longitude
+                'la'    => -1, // 维度 // latitude
 
-                    'UID'   => $_SESSION["UID"],
+                'UID'   => $_SESSION["UID"],
 
-                    // '标签'   => [119, 123],
-                    '标签'    => $WT,
-                    //归类
+                // '标签'   => [119, 123],
+                '标签'    => $WT,
+                //归类
 
-                    'picID' => 1,
+                'picID' => 1,
 
-                    'msg'   => [[
-                        'UID' => 4,
-                        'CT'  => '2018-01-14 11:23',
-                        // 计算 path ( 跟据work 的 CT时间 )
-                        // 20180114/23002.jpg
-                        'pic' => 2,
-
-                    ], [
-                        'UID' => 4,
-                        'CT'  => '2018-01-14 11:23',
-                        'T'   => '天天气很好',
-                    ]],
-                ],
+                'msg'   => [],
             ],
-        ];
+        ]);
 
-        ###############################
-        # insert
-        #
-        # 记录 insertID
-        #
-        SDB::insert($dat);
-        $D        = $dat['DAT'];
-        $D['WID'] = SDB::$insertID;
+        return $o;
 
-        $o      = new cla_user();
-        $o->DAT = $D;
+    }
+
+    #=====================================
+    #
+    # class
+    #
+    #=====================================
+
+    public function _DB()
+    {
+        return 'work';
+    }
+    public function ID_name()
+    {
+        return 'WID';
+    }
+    public function ifFT()
+    {
+        return true;
     }
 
     ############################
@@ -166,8 +124,7 @@ class cla_work  extends sdb_one
     private function is分组管理员()
     {
         $p = $this->getProject();
-        return
-        $p->我是管理员($this->DAT['JSON']['分组']);
+        return $p->我是管理员($this->DAT['JSON']['分组']);
     }
     public function is分组管理员_end()
     {
@@ -184,6 +141,10 @@ class cla_work  extends sdb_one
     {
         return $this->DAT['JID'];
     }
+    public function get分组()
+    {
+        return $this->DAT['JSON']['分组'];
+    }
 
     ############################
     #
@@ -196,12 +157,24 @@ class cla_work  extends sdb_one
     }
 
     ############################
+    # 重新设置 标签
+    #
+    public function 设置标签($ARR)
+    {
+        $this->DAT['JSON']['标签'] = $ARR;
+
+        $this->fixed();
+    }
+
+    ############################
     # 关闭 帖子
     # ( 不让回复了 )
     #
     public function closeIt()
     {
         $this->DAT['JSON']['open'] = 2;
+
+        $this->fixed();
     }
 
     ############################
@@ -212,12 +185,14 @@ class cla_work  extends sdb_one
     public function killIt()
     {
         $this->DAT['JSON']['open'] = 3;
+
+        $this->fixed();
     }
 
     ############################
     # 需要检查有没有上传'文件'
     #
-    public function 检查_上传图片()
+    public function 检查_上传图片($F)
     {
 
         ###############################
@@ -226,7 +201,7 @@ class cla_work  extends sdb_one
         # 用这张照片的 经纬度
         #
 
-        if (empty($_FILES['pic'])) {
+        if (empty($_FILES[$F])) {
             return; #没有 上传图片
         }
         ###############################
@@ -238,22 +213,31 @@ class cla_work  extends sdb_one
         # 计算 服务端的'文件名'
         #
         $exn = substr(
-            strrchr($_FILES['pic']['name'], '.'),
+            strrchr($_FILES[$F]['name'], '.'),
             1);
+
         $DAT   = &$this->DAT;
         $JSON  = &$DAT['JSON'];
         $picID = $JSON['picID']++;
 
+        $PID = $DAT['WID'] * 100 + $picID;
+        SYS::KK('计算PID', $PID);
+
         // pic/20180114/23002.jpg
         $fn = 'pic/' .
-        date('Ymd', $DAT['CT']) . '/' .
-            $DAT['WID'] * 1000 + $picID . '.' .
+        date('Ymd', strtotime($DAT['CT'])) . '/' .
+            $PID . '.' .
             $exn;
+
+        SYS::KK('文件名 ', $fn);
 
         ###############################
         # 按名字保存文件
         #
-        move_uploaded_file($_FILES['pic']['tmp_name'],
+        if (!is_dir(dirname($fn))) {
+            mkdir(dirname($fn), 0777, true);
+        }
+        move_uploaded_file($_FILES[$F]['tmp_name'],
             $fn);
 
         ###############################
@@ -261,7 +245,7 @@ class cla_work  extends sdb_one
         #
         $dat = [
             'UID' => $_SESSION['UID'],
-            'CT'  => strtotime('now'),
+            'CT'  => SYS::$NOW,
             'pic' => $picID,
         ];
         array_push($JSON['msg'], $dat);
@@ -278,15 +262,18 @@ class cla_work  extends sdb_one
         ###############################
         # insert cla_pic
         #
-        cal_pic::newOne(
+        cla_pic::newOne(
+            $PID,
             $this->getJID(),
             $_SESSION['UID'],
-            $_FILES['pic']['size'],
+            $_FILES[$F]['size'],
             $_POST['lo'],
             $_POST['la'],
             'mobile',
             $fn
         );
+
+        $this->fixed();
     }
 
     ############################
@@ -303,9 +290,11 @@ class cla_work  extends sdb_one
         #
         $dat = [
             'UID' => $_SESSION['UID'],
-            'CT'  => strtotime('now'),
+            'CT'  => SYS::$NOW,
             'T'   => $_POST['TXT'],
         ];
         array_push($this->DAT['JSON']['msg'], $dat);
+
+        $this->fixed();
     }
 }

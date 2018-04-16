@@ -10,6 +10,7 @@ class openID
 
     public static function get($code)
     {
+      
         $appID  = 'wxfa85e735b154f325';
         $secret = '4220c26ad926c84fb4fbaf0e8b8217fb';
 
@@ -22,7 +23,7 @@ class openID
         if (empty($array['openid'])) {
             openID::$OK = false;
         } else {
-            openID::$OK    = true;
+            openID::$OK     = true;
             openID::$openid = $array['openid'];
         }
 

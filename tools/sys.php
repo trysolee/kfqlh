@@ -2,6 +2,7 @@
 
 include_once '/tools/sdb.php';
 include_once "/tools/ret.php";
+include_once "/tools/val.php";
 /**
  *
  */
@@ -9,6 +10,8 @@ class SYS
 {
 
     public static $DBNL = [
+        'pic'    => 'pic',
+        'in'     => 'pro_in',
         'val'    => 'val',
         'openid' => 'openid',
         'user'   => 'user',
@@ -20,6 +23,35 @@ class SYS
     # 调试
     #
     public static $调试 = true;
+    public static function KK($n, $v)
+    {
+        if (SYS::$调试) {
+            echo "[ $n ]";
+
+            if ($v == ' ') {
+
+            } elseif (is_array($v)) {
+                echo ('::<br/>');
+                print_r(json_encode($v, JSON_UNESCAPED_UNICODE));
+                //
+                //
+                // print_r($v);
+                // echo (' ]');
+
+            } elseif (is_null($v)) {
+
+                echo "[ isNull ]";
+
+            } else {
+
+                echo ('[ ');
+                print_r($v);
+                echo (' ]');
+            }
+
+            echo "<br/>";
+        }
+    }
 
     ##############################
     # 超级管理员
@@ -29,6 +61,9 @@ class SYS
     #
     public static $adminOpenID =
         'r-aMG0QJ1HnNF6qEuXFejfSG0miw';
+    # $userOpenID  测试用
+    public static $userOpenID =
+        'r-a8888888888888uXFejfSG0miw';
 
     ##############################
     # 一个特殊的<邀请码>
@@ -41,6 +76,25 @@ class SYS
     # 存储 已经读取的 cla_obj
     #
     public static $BUF = [];
+    public static function BUF_save()
+    {
+        foreach (SYS::$BUF as $k1 => $v1) {
+            foreach ($v1 as $k2 => $v2) {
+                $v2->save();
+            }
+        }
+    }
+
+    ##############################
+    # 现在时间
+    #
+    # 避免重复调用时间函数
+    #
+    public static $NOW;
+    public static function getNow()
+    {
+        SYS::$NOW = date('Y-m-d H:i:s', strtotime('now'));
+    }
 
     ##############################
     #
@@ -68,44 +122,8 @@ class SYS
 
     public static function 初始化JSON()
     {
-        SYS::setJSON('管理员IDArr', []);
+        VAL::newOne('管理员IDArr', []);
 
-    }
-    public static function getJSON($n)
-    {
-        $b = SYS::$DBNL['val'];
-
-        $sql = "SELECT JSON  FROM " . $b
-            . "  where name = '" . $n . "'";
-
-        $d = SDB::SQL($sql);
-
-        if (SDB::$notFind) {
-
-            $s = ' VAL 无效';
-            if (SYS::$调试) {
-                $s = $n . $s;
-            }
-
-            $GLOBALS['RET']->错误终止_end($s);
-        }
-        return $d['JSON'];
-
-    }
-
-    public static function setJSON($n, $v)
-    {
-        $d = [
-            'name'  => SYS::$DBNL['val'],
-            'DAT'   => [
-                'JSON' => $v,
-            ],
-            'WHERE' => [
-                'name' => $n,
-            ],
-        ];
-
-        SDB::update($d);
     }
 
     public static function is超级管理员_end()
@@ -122,6 +140,14 @@ class SYS
             return false;
         } else {
             return true;
+        }
+    }
+
+    public static function is系统管理员_end()
+    {
+        if (!SYS::is系统管理员()) {
+            $GLOBALS['RET']->不是管理员_end();
+            exit();
         }
     }
 
@@ -146,10 +172,14 @@ class SYS
     #
     public static function add_管理员($UID)
     {
-        $a   = SYS::getJSON('管理员IDArr');
+        // $a   = SYS::getJSON('管理员IDArr');
+        $a = VAL::get('管理员IDArr');
+
         $a[] = $UID;
 
-        SYS::setJSON('管理员IDArr', array_unique($a));
+        VAL::set('管理员IDArr', array_unique($a));
+
+        // SYS::setJSON('管理员IDArr', array_unique($a));
     }
 
     ##############################
@@ -157,11 +187,10 @@ class SYS
     #
     public static function remove_管理员($UID)
     {
-        $a = SYS::getJSON('管理员IDArr');
 
-        SYS::setJSON('管理员IDArr',
-            array_diff($a, [$UID]));
+        $a = VAL::get('管理员IDArr');
 
+        VAL::set('管理员IDArr', array_diff($a, [$UID]));
     }
 
     ##############################
@@ -176,3 +205,5 @@ class SYS
         }
     }
 }
+
+SYS::getNow();

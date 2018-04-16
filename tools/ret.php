@@ -1,5 +1,7 @@
 <?php
 
+include_once "/tools/sys.php";
+
 /**
  *
  */
@@ -15,6 +17,10 @@ class ret
     private $STEP = [];
     private $DAT  = [];
     private $OPT  = [];
+
+    // true : 发生错误
+    // false : 正常
+    private $ERR = false;
 
     private $返回user数据 = false;
 
@@ -36,10 +42,10 @@ class ret
 
     private function SQL同一个JID()
     {
-        $UID    = $_SESSION["UID"];
-        $LT     = $_SESSION["LT"];
-        $day10  = $_SESSION["day10"];
-        $role   = $_SESSION["role"];
+        $UID   = $_SESSION["UID"];
+        $LT    = $_SESSION["LT"];
+        $day10 = $_SESSION["day10"];
+        // $role   = $_SESSION["role"];
         $JID    = $_SESSION["JID"];
         $分组 = $_SESSION["分组"];
 
@@ -68,10 +74,10 @@ class ret
     }
     private function SQL换了JID()
     {
-        $UID    = $_SESSION["UID"];
-        $LT     = $_SESSION["LT"];
-        $day10  = $_SESSION["day10"];
-        $role   = $_SESSION["role"];
+        $UID   = $_SESSION["UID"];
+        $LT    = $_SESSION["LT"];
+        $day10 = $_SESSION["day10"];
+        // $role   = $_SESSION["role"];
         $JID    = $_SESSION["JID"];
         $分组 = $_SESSION["分组"];
 
@@ -105,7 +111,7 @@ class ret
         }
 
         if ($this->返回user数据) {
-            $arr[] = [
+            $a[] = [
                 'name' => 'user_my',
 
                 'sql'  => "SELECT *"
@@ -113,6 +119,8 @@ class ret
                 . " WHERE UID = " . $_SESSION["UID"],
             ];
         }
+
+        return $a;
     }
 
     // 判断 两个 Array 有没有重合的元素
@@ -156,23 +164,18 @@ class ret
     public function getDAT()
     {
         // 设置返回json格式数据
-        header('content-type:application/json;charset=utf8');
+        // header('content-type:application/json;charset=utf8');
 
-        //连接数据库
-        $link = mysql_connect(ret::$URL, ret::$admin, ret::$pw) or die("Unable to connect to the MySQL!");
+        // //连接数据库
+        // $link = mysql_connect(ret::$URL, ret::$admin, ret::$pw) or die("Unable to connect to the MySQL!");
 
-        mysql_query("SET NAMES 'UTF8'");
+        // mysql_query("SET NAMES 'UTF8'");
 
-        mysql_select_db(ret::$table, $link) or die("Unable to connect to the MySQL!");
+        // mysql_select_db(ret::$table, $link) or die("Unable to connect to the MySQL!");
 
         foreach ($this->SQL() as $value) {
             $this->select($value['name'], $value['sql']);
         }
-
-        mysql_close($link);
-
-        $_SESSION['LT'] = date('Y-m-d H:i:s');
-
     }
 
     public function setOPT($name, $val)
@@ -182,25 +185,37 @@ class ret
 
     public function toStr_end()
     {
-
-        #=====================================
-        #  标记最后连接的时间
+        ###################
+        # 如果 没有错误 , save
         #
-        $_SESSION['LT']     = strtotime('now');
-        $_SESSION['JID_LT'] = $_SESSION['JID'];
+        if (!$this->ERR) {
+            SYS::BUF_save();
+            $this->getDAT();
+        }
+        // 关闭 mySQL
+        SDB::_END();
 
-        $RET = [
+        $Ret = [
             'OPT' => $this->OPT,
             'DAT' => $this->DAT,
         ];
+
+        #=============================
+        #  标记最后连接的时间
+        #
+        $_SESSION['LT']     = SYS::$NOW;
+        $_SESSION['JID_LT'] = $_SESSION['JID'];
+
         // 将数组转成json格式
-        echo json_encode($RET, JSON_UNESCAPED_UNICODE);
+        echo json_encode($Ret, JSON_UNESCAPED_UNICODE);
         //
         exit();
     }
 
     public function 还没注册_end()
     {
+        $this->ERR = true;
+
         $this->setOPT('ERR', '90');
         $this->setOPT('MSG', '还没注册');
 
@@ -214,6 +229,8 @@ class ret
     #
     public function 参数不全_end()
     {
+        $this->ERR = true;
+
         $this->setOPT('ERR', '90');
         $this->setOPT('MSG', '参数不全');
 
@@ -231,8 +248,10 @@ class ret
     #
     public function 不是管理员_end()
     {
+        $this->ERR = true;
+
         $this->setOPT('ERR', '90');
-        $this->setOPT('MSG', '参数不全');
+        $this->setOPT('MSG', '不是管理员');
 
         $this->toStr_end();
     }
@@ -242,6 +261,8 @@ class ret
     #
     public function codeERR_end()
     {
+        $this->ERR = true;
+
         $this->setOPT('ERR', '90');
         $this->setOPT('MSG', '微信登录失败');
 
@@ -253,6 +274,8 @@ class ret
     #
     public function ID无效_end($表名)
     {
+        $this->ERR = true;
+
         $this->setOPT('ERR', '90');
         $this->setOPT('MSG', 'ID无效');
 
@@ -272,6 +295,8 @@ class ret
     #
     public function 错误终止_end($TXT)
     {
+        $this->ERR = true;
+
         $this->setOPT('ERR', '93');
         $this->setOPT('MSG', $TXT);
 
@@ -280,7 +305,11 @@ class ret
 }
 
 // 设置返回json格式数据
-header('content-type:application/json;charset=utf8');
+if (SYS::$调试) {
+    header('content-type:text/html;charset=utf8');
+} else {
+    header('content-type:application/json;charset=utf8');
+}
 
 $RET = $GLOBALS['RET'] = new ret();
 

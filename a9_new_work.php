@@ -4,7 +4,7 @@
 #
 
 include_once "/tools/ret.php";
-include_once "class/cla_in.php";
+include_once "/class/cla_work.php";
 
 ###############################
 # 参数检查
@@ -15,7 +15,7 @@ SYS::参数检查_end(['WT']);
 $WT = json_decode($_POST['WT'], true);
 $w  = cla_work::newWork($WT);
 
-$w->检查_上传文件('file');
+$w->检查_上传图片('file');
 
 $w->检查_上传TXT();
 

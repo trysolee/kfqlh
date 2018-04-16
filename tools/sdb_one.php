@@ -1,13 +1,18 @@
 <?php
 
-include_once '/tools/sdb.php';
-
 abstract class sdb_one
 {
 
     public $DAT;
 
     public $fix = false;
+
+    //
+    public $ready = false;
+    public function isOK()
+    {
+        return $this->ready;
+    }
 
     ###################################
     # 返回 数据库的表名 的标志
@@ -16,15 +21,60 @@ abstract class sdb_one
     #
     abstract public function _DB();
 
-    abstract public function ID();
-
     abstract public function ID_name();
 
     #################################
+    #
+    #
+    public function ID是str()
+    {
+        return false;
+    }
+    public function ifFT()
+    {
+        return false;
+    }
+
+    public function ID()
+    {
+        if (empty($this->DAT[$this->ID_name()])) {
+            SYS::KK('主键 null', $this->_DB());
+            SYS::KK('DAT is ', $this->DAT);
+        }
+
+        return $this->DAT[$this->ID_name()];
+    }
+
+    public function ID累加()
+    {
+        // 不累加 需要 重写
+        // return false;
+        return true;
+    }
 
     public function fixed()
     {
         $this->fix = true;
+    }
+
+    #################################
+    #
+    #
+    public function _NEW($DAT)
+    {
+        SDB::insert([
+            'name' => $this->_DBN(),
+            'DAT'  => $DAT,
+        ]);
+
+        $this->DAT = &$DAT;
+        $D         = &$DAT;
+        if ($this->ID累加()) {
+            $D[$this->ID_name()] = SDB::$insertID;
+        }
+
+        $this->addBUF();
+        $this->ready = true;
     }
 
     #################################
@@ -38,6 +88,10 @@ abstract class sdb_one
     public function save()
     {
         if ($this->fix) {
+            if ($this->ifFT()) {
+                $this->DAT['FT'] = SYS::$NOW;
+            }
+
             SDB::update(
                 [
                     'name'  => $this->_DBN(),
@@ -50,7 +104,7 @@ abstract class sdb_one
         }
     }
 
-    public static function addBUF()
+    public function addBUF()
     {
         SYS::$BUF[$this->_DB()]
         [$this->ID()] = $this;
@@ -63,7 +117,19 @@ abstract class sdb_one
     #
     # 也可能是在$this 基础上 读取 $DAT
     #
-    public function getDatByID($ID)
+    public function getObjByID_end($ID)
+    {
+        $o = $this->getObjByID($ID);
+        if (!$o->ready) {
+            SYS::KK('ID无效 DB名', $this->_DB());
+            SYS::KK('ID无效 ID值', $this->ID());
+
+            $GLOBALS['RET']->ID无效_end($this->_DB());
+        }
+
+        return $o;
+    }
+    public function getObjByID($ID)
     {
         if (!empty(SYS::$BUF[$this->_DB()]
             [$ID])) {
@@ -72,18 +138,26 @@ abstract class sdb_one
                 [$ID];
         }
 
-        $sql = "SELECT * FROM  " . $this->_DBN()
-        . " where "
-        . $this->ID_name() . " = "
-            . $ID;
-
-        $this->DAT = SDB::SQL($sql);
-        if (SDB::$notFind) {
-            $GLOBALS['RET']->ID无效_end($this->_DB());
+        // 如果 ID 是 string 需要加 '引号'
+        $FG = '';
+        if ($this->ID是str()) {
+            $FG = '\'';
         }
 
+        $sql = "SELECT * FROM  " . $this->_DBN()
+        . " where "
+        . $this->ID_name() . " = " . $FG
+            . $ID . $FG;
+
+        $this->DAT = SDB::SQL($sql);
+
+        if (SDB::$notFind) {
+            // ready 初始化已经是false
+            return $this;
+        }
+
+        $this->ready = true;
         $this->addBUF();
         return $this;
     }
-
 }
