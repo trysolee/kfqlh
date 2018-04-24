@@ -52,6 +52,16 @@ function login_user() {
         })
 }
 
+function login_xx() {
+    httpPost( //
+        'a9_login.php',
+        // 'test16.php',
+        ///
+        {
+            code: 'usxxer',
+        })
+}
+
 function fix_pro_name() {
     var JN = document.getElementById("JN2").value;
     httpPost( //

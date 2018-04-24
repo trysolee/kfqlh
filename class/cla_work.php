@@ -111,9 +111,14 @@ class cla_work extends sdb_one
         if ($this->is我发布的()) {
             return;
         }
-        if ($this->is分组管理员()) {
+        if (cla_pro_user::is分组管理员(
+            $this->getJID(),
+            $this->get分组(),
+            $_SESSION['UID'])
+        ) {
             return;
         }
+        
         $GLOBALS['RET']->错误终止_end('须管理员或发布者');
         exit();
     }
@@ -121,15 +126,15 @@ class cla_work extends sdb_one
     ############################
     #
     #
-    private function is分组管理员()
+    public function is当前项目_分组_end()
     {
-        $p = $this->getProject();
-        return $p->我是管理员($this->DAT['JSON']['分组']);
-    }
-    public function is分组管理员_end()
-    {
-        if (!$this->is分组管理员()) {
-            $GLOBALS['RET']->错误终止_end('必须是管理员');
+        if ($this->getJID() != $_SESSION['JID']) {
+            $GLOBALS['RET']->错误终止_end('不是当前项目');
+            exit();
+        }
+
+        if ($this->get分组() != $_SESSION['分组']) {
+            $GLOBALS['RET']->错误终止_end('不是当前分组');
             exit();
         }
     }

@@ -44,6 +44,7 @@
 #
 #
 include_once '/tools/sys.php';
+include_once "/class/cla_pro_user.php";
 include_once "/class/cla_project.php";
 include_once "/class/cla_user.php";
 include_once "/class/cla_openid.php";
@@ -85,9 +86,7 @@ class BEGIN
         $分组 = '监理';
 
         $u = cla_user::newOne(
-            $name,
-            $j1->getJID(),
-            $分组
+            $name
         );
         $UID = $u->getUID();
 
@@ -99,25 +98,27 @@ class BEGIN
             $UID
         );
 
-        $j1->被邀请进入分组(
-            $UID,
-            $name,
-            $分组,
-            $UID
-        );
+        if ($o->fix) {
+            SYS::KK('openid hasFix', null);
+        }
+
+        $pu1 = cla_pro_user::putOne(
+            $UID, $name,
+            $j1->getJID(), $分组, $UID);
+
+        // SYS::KK('j1', $pu1->DAT);
+
+        $u->set当前项目分组($j1->getJID(), $分组);
 
         Session::set($u, SYS::$adminOpenID);
 
         ####################################
         # 加入 '测试项目2'
         #
-        $u->加入项目($j2->getJID());
-        $j2->被邀请进入分组(
-            $UID,
-            $name,
-            $分组,
-            $UID
-        );
+        $pu2 = cla_pro_user::putOne(
+            $UID, $name,
+            $j2->getJID(), $分组, $UID);
 
+        // SYS::KK('j2', $pu2->DAT);
     }
 }

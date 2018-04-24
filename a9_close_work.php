@@ -16,6 +16,7 @@ include_once "/class/cla_work.php";
 SYS::参数检查_end(['WID']);
 
 $w = cla_work::getByID($_POST['WID']);
+$w->is当前项目_分组_end();
 $w->is我发布的or分组管理员_end();
 
 $w->closeIt();

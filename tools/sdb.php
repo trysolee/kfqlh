@@ -57,12 +57,19 @@ class SDB
         }
 
         mysql_query($sql);
+
+        if (!mysql_query($sql)) {
+            SYS::KK('Exec 失败', $sql);
+        }
     }
+
     #=====================================
     # 执行 SQL
     #
     public static function SQL($sql)
     {
+
+        SDB::$notFind = true;
 
         if (!SDB::$ready) {
             SDB::bSet();
@@ -77,13 +84,41 @@ class SDB
                 if (array_key_exists('JSON', $row)) {
                     $row['JSON'] = json_decode($row['JSON'], true);
                 }
-
                 SDB::$notFind = false;
-
                 // $row['JSON'] = json_decode($row['JSON'], true);
 
                 return $row;
             }
+        } else {
+            $GLOBALS['RET']->错误终止_end('SDB 1 ' . $sql);
+
+        }
+
+    }
+
+    // 返回多行数据
+    public static function SQL_s($sql)
+    {
+
+        if (!SDB::$ready) {
+            SDB::bSet();
+        }
+
+        $result = mysql_query($sql);
+        if ($result) {
+
+            $arr = [];
+            while ($row = mysql_fetch_assoc($result)) {
+
+                if (array_key_exists('JSON', $row)) {
+                    $row['JSON'] = json_decode($row['JSON'], true);
+                }
+
+                $arr[] = $row;
+            }
+
+            return $arr;
+
         } else {
             $GLOBALS['RET']->错误终止_end('SDB 1 ' . $sql);
 

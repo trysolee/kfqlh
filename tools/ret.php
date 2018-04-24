@@ -70,6 +70,17 @@ class ret
             . " AND FT > '" . $LT . "'",
         ];
 
+        $arr[] = [
+            'name' => 'pro_user',
+
+            'sql'  => "SELECT a.* , b.name "
+            . " FROM  pro_user as a"
+            . " ,projoct as b"
+            . " WHERE a.UID = " . $UID
+            . " AND a.JID = b.JID"
+            . " AND a.FT > '" . $LT . "'",
+        ];
+
         return $arr;
     }
     private function SQL换了JID()
@@ -98,6 +109,16 @@ class ret
             'sql'  => "SELECT *"
             . " FROM  projoct "
             . " WHERE JID = " . $JID,
+        ];
+
+        $arr[] = [
+            'name' => 'pro_user',
+
+            'sql'  => "SELECT a.* , b.name "
+            . " FROM  pro_user as a"
+            . " ,projoct as b"
+            . " WHERE a.UID = " . $UID
+            . " AND a.JID = b.JID",
         ];
 
         return $arr;
@@ -138,6 +159,9 @@ class ret
         // 查询数据到数组中
         // $result = mysql_query("select UID ,name ,phone  from user ");
         $result = mysql_query($sql);
+        if (!$result) {
+            SYS::KK('RET select SQL return Null', $sql);
+        }
 
         $results = array();
         while ($row = mysql_fetch_assoc($result)) {
@@ -195,6 +219,16 @@ class ret
         // 关闭 mySQL
         SDB::_END();
 
+        // 返回 登陆数据
+        if ($this->返回user数据) {
+            if (SYS::is超级管理员()) {
+                $this->setOPT('supAdmin', 'true');
+            }
+            if (SYS::is系统管理员()) {
+                $this->setOPT('Admin', 'true');
+            }
+        }
+        //
         $Ret = [
             'OPT' => $this->OPT,
             'DAT' => $this->DAT,
@@ -203,8 +237,11 @@ class ret
         #=============================
         #  标记最后连接的时间
         #
-        $_SESSION['LT']     = SYS::$NOW;
-        $_SESSION['JID_LT'] = $_SESSION['JID'];
+        $_SESSION['LT'] = SYS::$NOW;
+
+        if (!empty($_SESSION['JID'])) {
+            $_SESSION['JID_LT'] = $_SESSION['JID'];
+        }
 
         // 将数组转成json格式
         echo json_encode($Ret, JSON_UNESCAPED_UNICODE);
@@ -299,6 +336,16 @@ class ret
 
         $this->setOPT('ERR', '93');
         $this->setOPT('MSG', $TXT);
+
+        $this->toStr_end();
+    }
+
+    public function 不在项目_end()
+    {
+        $this->ERR = true;
+
+        $this->setOPT('ERR', '95');
+        $this->setOPT('MSG', '需要重新接收邀请');
 
         $this->toStr_end();
     }

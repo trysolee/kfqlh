@@ -1,11 +1,16 @@
 <?php
 
+include_once "/tools/ret.php";
+include_once '/tools/sdb.php';
+include_once "/tools/sys.php";
+
 abstract class sdb_one
 {
 
     public $DAT;
 
-    public $fix = false;
+    public $fix  = false;
+    public $del_ = false;
 
     //
     public $ready = false;
@@ -57,6 +62,11 @@ abstract class sdb_one
         $this->fix = true;
     }
 
+    public function del()
+    {
+        $this->del_ = true;
+    }
+
     #################################
     #
     #
@@ -80,27 +90,45 @@ abstract class sdb_one
     #################################
     # 返回 数据库的表名( 最新版本 )
     #
-    private function _DBN()
+    public function _DBN()
     {
         return SYS::$DBNL[$this->_DB()];
     }
 
     public function save()
     {
+        if ($this->del_) {
+
+            SYS::KK('del ' . $this->_DB(), $this->DAT);
+
+            $sql = "delete from " . $this->_DBN()
+            . ' where '
+            . $this->_WHERE($this->ID());
+
+            SDB::exec($sql);
+            $this->del_ = false;
+            return;
+        }
+
         if ($this->fix) {
+
+            SYS::KK('save ' . $this->_DB(), $this->DAT);
+
             if ($this->ifFT()) {
                 $this->DAT['FT'] = SYS::$NOW;
             }
 
             SDB::update(
                 [
-                    'name'  => $this->_DBN(),
-                    'DAT'   => $this->DAT,
-                    'WHERE' => [
-                        $this->ID_name() => $this->ID(),
-                    ],
+                    'name'     => $this->_DBN(),
+                    'DAT'      => $this->DAT,
+                    'SQLWhere' =>
+                    $this->_WHERE($this->ID()),
+
                 ]
             );
+
+            $this->fix = false;
         }
     }
 
@@ -110,6 +138,17 @@ abstract class sdb_one
         [$this->ID()] = $this;
     }
 
+    public function getBUF($ID)
+    {
+        if (!empty(SYS::$BUF[$this->_DB()]
+            [$ID])) {
+
+            return SYS::$BUF[$this->_DB()]
+                [$ID];
+        } else {
+            return null;
+        }
+    }
     #=====================================
     # 返回一个 OBJ
     #
@@ -129,25 +168,20 @@ abstract class sdb_one
 
         return $o;
     }
+
     public function getObjByID($ID)
     {
-        if (!empty(SYS::$BUF[$this->_DB()]
-            [$ID])) {
-
-            return SYS::$BUF[$this->_DB()]
-                [$ID];
+        if (!$ID) {
+            return;
         }
 
-        // 如果 ID 是 string 需要加 '引号'
-        $FG = '';
-        if ($this->ID是str()) {
-            $FG = '\'';
+        $o = $this->getBUF($ID);
+        if ($o) {
+            return $o;
         }
 
         $sql = "SELECT * FROM  " . $this->_DBN()
-        . " where "
-        . $this->ID_name() . " = " . $FG
-            . $ID . $FG;
+        . ' where ' . $this->_WHERE($ID);
 
         $this->DAT = SDB::SQL($sql);
 
@@ -159,5 +193,17 @@ abstract class sdb_one
         $this->ready = true;
         $this->addBUF();
         return $this;
+    }
+
+    public function _WHERE($ID)
+    {
+        // 如果 ID 是 string 需要加 '引号'
+        $FG = '';
+        if ($this->ID是str()) {
+            $FG = '\'';
+        }
+
+        return $this->ID_name() . " = " . $FG
+            . $ID . $FG;
     }
 }

@@ -81,9 +81,7 @@ class cla_in extends sdb_one
         $openid = $openCla->getOpenID();
 
         $u = cla_user::newOne(
-            $userName,
-            $JID,
-            $分组
+            $userName
         );
 
         #####################################
@@ -96,18 +94,11 @@ class cla_in extends sdb_one
             $u->getUID()
         );
 
-        #####################################
-        # 通过 JID get project
-        #
-        # 把 UID 加入到指定'分组'
-        #
-        $j = cla_project::getByID($JID);
-        $j->被邀请进入分组(
-            $u->getUID(),
-            $userName,
-            $分组,
-            $邀请人
-        );
+        cla_pro_user::putOne(
+            $u->getUID(), $userName,
+            $JID, $分组, $邀请人);
+
+        $u->set当前项目分组($JID, $分组);
 
         Session::set($u, $openid);
     }
@@ -121,36 +112,16 @@ class cla_in extends sdb_one
         $分组    = $this->DAT['JSON']['分组'];
         $邀请人 = $this->DAT['JSON']['UID'];
 
-        SYS::KK('二次邀请', 'go');
-
         #####################################
         # 通过 openid 找到 user
         #
         $u = $openCla->getUser();
-        $u->加入项目($JID);
+
+        cla_pro_user::putOne(
+            $u->getUID(), $userName,
+            $JID, $分组, $邀请人);
+
         $u->set当前项目分组($JID, $分组);
-
-        #####################################
-        # 通过 JID 找到 project
-        #
-        # 设置 project 里面的数据
-        # 在对应的分组里面 添加成员
-        #
-        $j = cla_project::getByID($JID);
-
-        ###############################
-        # 需要避免 二次扫描
-        # 把前面设置好的权限 冲掉了
-        #
-        if (!$j->他是成员($分组, $u->getUID())) {          
-
-            $j->被邀请进入分组(
-                $u->getUID(),
-                $userName,
-                $分组,
-                $邀请人
-            );
-        }
 
         Session::set($u, $openCla->getOpenID());
     }

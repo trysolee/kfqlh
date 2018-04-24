@@ -2,7 +2,7 @@
 ###############################
 # 屏蔽 一个 帖子
 # ( 管理员)
-# 
+#
 # 不会被看到
 #
 
@@ -15,8 +15,10 @@ include_once "/class/cla_work.php";
 #
 SYS::参数检查_end(['WID']);
 
+cla_pro_user::我是分组管理员_end();
+
 $w = cla_work::getByID($_POST['WID']);
-$w->is分组管理员_end();
+$w->is当前项目_分组_end();
 
 $w->killIt();
 

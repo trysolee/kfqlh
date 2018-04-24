@@ -10,13 +10,14 @@ class SYS
 {
 
     public static $DBNL = [
-        'pic'    => 'pic',
-        'in'     => 'pro_in',
-        'val'    => 'val',
-        'openid' => 'openid',
-        'user'   => 'user',
-        'pro'    => 'projoct',
-        'work'   => 'pro_work',
+        'pic'      => 'pic',
+        'in'       => 'pro_in',
+        'val'      => 'val',
+        'openid'   => 'openid',
+        'user'     => 'user',
+        'pro'      => 'projoct',
+        'work'     => 'pro_work',
+        'pro_user' => 'pro_user',
     ];
 
     ##############################

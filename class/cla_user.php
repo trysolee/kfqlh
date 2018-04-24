@@ -1,10 +1,6 @@
 <?php
 
-include_once "/tools/ret.php";
-include_once '/tools/sdb.php';
 include_once '/tools/begin.php';
-include_once "/tools/sys.php";
-
 include_once "/class/cla_openid.php";
 
 class cla_user extends sdb_one
@@ -30,18 +26,13 @@ class cla_user extends sdb_one
     #=====================================
     # 创建 一个 user
     #
-    public static function newOne($userName,
-        $JID, $分组) {
+    public static function newOne($userName)
+    {
 
         $o = new cla_user();
         $o->_NEW([
             'name' => $userName,
-
-            'JSON' => [
-                'JID'  => $JID, # 当前项目
-                '分组'   => $分组, # 当前分组
-                'JIDs' => [$JID],
-            ],
+            'JSON' => [],
             'FT'   => SYS::$NOW,
             'LT'   => SYS::$NOW,
         ]);
@@ -67,6 +58,13 @@ class cla_user extends sdb_one
     {
         return true;
     }
+    public function fixed()
+    {
+        $this->fix = true;
+        if ($_SESSION['UID'] == $this->getUID()) {
+            $GLOBALS['RET']->登录返回();
+        }
+    }
 
     #=====================================
     #
@@ -79,25 +77,6 @@ class cla_user extends sdb_one
     public function setLT()
     {
         $this->DAT['LT'] = SYS::$NOW;
-
-    }
-
-    #=====================================
-    #
-    #
-    public function 加入项目($JID)
-    {
-        $a   = &$this->DAT['JSON']['JIDs'];
-        $a[] = $JID;
-        $a   = array_unique($a);
-
-        $this->fixed();
-    }
-    public function 离开项目($JID)
-    {
-        $a = &$this->DAT['JSON']['JIDs'];
-        $a = array_diff($a, [$JID]);
-
         $this->fixed();
     }
 
@@ -109,10 +88,6 @@ class cla_user extends sdb_one
         return $this->DAT['JSON']['JID'];
 
     }
-
-    #=====================================
-    #
-    #
     public function get当前分组()
     {
         return $this->DAT['JSON']['分组'];
@@ -124,6 +99,36 @@ class cla_user extends sdb_one
         $this->DAT['JSON']['JID']    = $JID;
         $this->DAT['JSON']['分组'] = $分组;
         $this->fixed();
+    }
+
+    public function set当前byPro_User($obj)
+    {
+
+        if ($obj->isOK()) {
+            $this->set当前项目分组(
+                $obj->getJID(),
+                $obj->getUID()
+            );
+        } else {
+            unset($this->DAT['JSON']['JID']);
+            unset($this->DAT['JSON']['分组']);
+        }
+
+        $this->fixed();
+    }
+
+    public function is当前项目分组($JID, $分组)
+    {
+
+        if ($this->DAT['JSON']['JID'] != $JID) {
+            return false;
+        }
+
+        if ($this->DAT['JSON']['分组'] != $分组) {
+            return false;
+        }
+
+        return true;
     }
 
     public function getUID()

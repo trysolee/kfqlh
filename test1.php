@@ -3,6 +3,13 @@
 // 设置返回json格式数据
 header('content-type:application/json;charset=utf8');
 
-$air = 'qwer';
+$f = false;
 
-echo "<$air>";
+$t = true;
+
+if ($a = $f) {
+    echo "string";
+}
+
+
+echo gettype($f);

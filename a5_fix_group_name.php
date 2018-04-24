@@ -3,21 +3,17 @@
 # 更改 当前项目.分组.名称
 #
 
-include_once "/tools/ret.php";
-include_once "/tools/sys.php";
 include_once "/class/cla_project.php";
+include_once "/class/cla_pro_user.php";
 
 ###############################
 # 参数检查
 #
 SYS::参数检查_end(['name']);
 
-$j = cla_project::get当前();
+cla_pro_user::我是分组管理员_end();
 
-###############################
-# 权限
-#
-$j->我是管理员_end();
+$j = cla_project::get当前();
 
 $j->fix分组名($_POST['name']);
 

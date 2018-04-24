@@ -18,7 +18,7 @@ class cla_project extends sdb_one
     #############################
     # 巡查系统框架
     #
-    private static $FK = [
+    public static $FK = [
 
         '监理' => [
             'name'    => '监理单位',
@@ -37,9 +37,6 @@ class cla_project extends sdb_one
                 '100023' => '草皮过高修剪',
             ],
 
-            'user'    => [ // 记录在 SQL
-                //'11' => ['监理巡查', '监理浏览', '监理维护'],
-            ],
         ],
 
         '施工' => [
@@ -58,8 +55,6 @@ class cla_project extends sdb_one
                 '121' => '乔木倾倒扶正',
                 '123' => '草皮过高修剪',
             ],
-
-            'user'    => [],
         ],
 
         '甲方' => [
@@ -78,8 +73,6 @@ class cla_project extends sdb_one
                 '600021' => '乔木倾倒扶正',
                 '600023' => '草皮过高修剪',
             ],
-
-            'user'    => [],
         ],
 
         '临时' => [
@@ -120,22 +113,19 @@ class cla_project extends sdb_one
             'JSON' => [
                 '监理' => [
                     'name' => '监理单位',
-                    'user' => [
 
-                    ],
                 ],
                 '甲方' => [
                     'name' => '甲方单位',
-                    'user' => [],
+
                 ],
                 '施工' => [
                     'name' => '施工单位',
-                    'user' => [],
+                    // 'user' => [],
                 ],
                 '临时' => [
                     'name' => '相关单位',
-                    'user' => [
-                    ],
+
                 ],
             ],
             'name' => $name,
@@ -159,6 +149,7 @@ class cla_project extends sdb_one
     #
     # $JID 记录在 seesion 里面
     #
+    # 333
     public static function get当前()
     {
         return cla_project::getByID($_SESSION['JID']);
@@ -181,247 +172,6 @@ class cla_project extends sdb_one
     public function ifFT()
     {
         return true;
-    }
-
-    #####################################
-    # 获得 user 的 role(权限)
-    #
-    # $UID 记录在 seesion 里面
-    #
-    public function getRole()
-    {
-
-        ###############################
-        #
-        # 返回 user 在 分组的权限
-        #
-        return $this->getRoleByUID($_SESSION['UID']);
-    }
-    public function getRoleByUID($UID)
-    {
-
-        if (empty($this->DAT['JSON']
-            [$_SESSION['分组']]
-            ['user']
-            [$UID]
-            ['role'])) {
-
-            SYS::KK('没发现 uid', $UID);
-            SYS::KK('分组', $_SESSION['分组']);
-            SYS::KK('DAT = ', $this->DAT);
-        }
-
-        ###############################
-        #
-        # 返回 user 在 分组的权限
-        #
-        return $this->DAT['JSON']
-            [$_SESSION['分组']]
-            ['user']
-            [$UID]
-            ['role'];
-
-    }
-
-    #####################################
-    #
-    #
-    public function 设置UID权限($分组, $UID, $role)
-    {
-        $this->DAT['JSON']
-        [$分组]
-        ['user']
-        [$UID]
-        ['role'] = $role;
-
-        $this->fixed();
-    }
-    public function 移去UID权限($分组, $UID)
-    {
-        unset($this->DAT['JSON']
-            [$分组]
-            ['user']
-            [$UID]);
-
-        $this->fixed();
-    }
-
-    #####################################
-    #
-    #
-    public function 被邀请进入分组($UID, $name, $分组, $inUID)
-    {
-
-        $this->DAT['JSON']
-        [$分组]
-        ['user']
-        [$UID] = [
-            'name'   => $name,
-            'role'   => cla_project::$FK[$分组]['roleNEW'],
-            'inUser' => $inUID,
-        ];
-        $this->fixed();
-    }
-
-    #####################################
-    #
-    #
-    public function 他是成员_end($分组, $UID)
-    {
-
-        if ($this->他是成员($分组, $UID)) {
-            return true;
-        }
-        $GLOBALS['RET']->错误终止_end('不属于项目分组');
-        exit();
-    }
-    public function 他是成员($分组, $UID)
-    {
-
-        // SYS::KK('他是成员1', $分组);
-        // SYS::KK('他是成员1', $UID);
-        // SYS::KK('他是成员1', $this->DAT);
-
-        // if (empty($this->DAT['JSON']
-        //     [$分组]
-        //     ['user']
-        //     [$UID])) {
-        //     SYS::KK('他是成员2', '他不是成员');
-        // } else {
-        //     SYS::KK('他是成员2', '他是成员');
-        // }
-
-        return !empty($this->DAT['JSON']
-            [$分组]
-            ['user']
-            [$UID]
-        );
-    }
-    public function 我是成员()
-    {
-        return $this->他是成员(
-            $_SESSION['分组'],
-            $_SESSION['UID']
-        );
-    }
-    public function 他在项目($UID)
-    {
-        if ($this->他是成员('监理', $UID)) {
-            return true;
-        }
-        if ($this->他是成员('甲方', $UID)) {
-            return true;
-        }
-        if ($this->他是成员('施工', $UID)) {
-            return true;
-        }
-        if ($this->他是成员('临时', $UID)) {
-            return true;
-        }
-        if (SYS::is系统管理员()) {
-            return true;
-        }
-        return false;
-    }
-
-    #####################################
-    #
-    #
-    public function 我是管理员_end()
-    {
-
-        if (!$this->我是管理员($_SESSION['分组'])) {
-            $GLOBALS['RET']->错误终止_end('必须是管理员');
-            exit();
-        }
-    }
-
-    public function 我是管理员($分组)
-    {
-
-        ###############################
-        #
-        # 包括 : 超级管理员 和 系统管理员
-        #
-        # 分组管理员 考虑 当前分组
-        #
-        if (SYS::is系统管理员()) {
-            return true;
-        }
-
-        if (in_array('管理员',
-            $this->DAT['JSON']
-            [$分组]
-            ['user']
-            [$_SESSION['UID']])) {
-            return true;
-        }
-
-        return false;
-    }
-    #####################################
-    #
-    #
-    public function fix某人权限($UID, $ARR)
-    {
-
-        ###############################
-        #
-        # 1 . 检查 $UID 原来在不在 project里面
-        # ( 不能硬拉人进来 , 只能邀请 )
-        #
-        # 2 . 判断 $ARR是否 是否符合role定义
-        #
-        # 3 . '踢走' , 如果$ARR 长度为 0
-        # 踢走这个成员
-        #
-        # 4 . 只能处理当前分组
-        #
-
-        $分组 = $_SESSION['分组'];
-
-        ############################
-        # $ARR 必须是 array
-        #
-        if (!is_array($ARR)) {
-            $GLOBALS['RET']->错误终止_end('参数不是array(2)');
-        }
-
-        ############################
-        # $UID 原来必须在 分组里面
-        #
-        if (!$this->他是成员($分组, $UID)) {
-            $GLOBALS['RET']->错误终止_end('增加了UID');
-        }
-
-        ############################
-        # 权限 合法性
-        #
-        if (count(array_diff($ARR, cla_project::$FK[$分组]['role'])) > 0) {
-            $GLOBALS['RET']->错误终止_end('非法权限');
-        }
-
-        if (count($ARR) == 0) {
-            ############################
-            # 如果 $ARR长度为0 ,
-            # 踢走着个 UID
-            #
-            $this->移去UID权限($分组, $UID);
-
-            if (!$this->他在项目($UID)) {
-                $u = cla_user::getByID($UID);
-                $u->离开项目($this->getJID());
-            }
-
-        } else {
-            ############################
-            #设置新权限
-            #
-            $this->设置UID权限($分组, $UID, $ARR);
-        }
-
-        $this->fixed();
-
     }
 
     #####################################
@@ -472,9 +222,6 @@ class cla_project extends sdb_one
     public function getJID()
     {
 
-        ###############################
-        #
-        #
         return $this->DAT['JID'];
     }
 

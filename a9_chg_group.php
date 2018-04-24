@@ -28,12 +28,10 @@ if (SYS::is系统管理员()) {
     return;
 }
 
-$j = cla_project::getByID($JID);
-if ($j->他是成员_end($分组, $UID)) {
+cla_pro_user::他是成员_end($JID, $分组, $UID);
 
-    $u->set当前项目分组($JID, $分组);
-    Session::set当前分组($JID, $分组);
-}
+$u->set当前项目分组($JID, $分组);
+Session::set当前分组($JID, $分组);
 
 ###############################
 # 结束返回
