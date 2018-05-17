@@ -5,7 +5,7 @@
 # 邀请当前'项目.分组'
 #
 
-include_once "/tools/ret.php";
+include_once "tools/ret.php";
 include_once "class/cla_in.php";
 
 ###############################

@@ -1,8 +1,8 @@
 <?php
 
-include_once '/tools/sdb.php';
-include_once "/tools/ret.php";
-include_once "/tools/val.php";
+include_once 'tools/sdb.php';
+include_once "tools/ret.php";
+include_once "tools/val.php";
 /**
  *
  */
@@ -24,8 +24,13 @@ class SYS
     # 调试
     #
     public static $调试 = true;
+
     public static function KK($n, $v)
     {
+        if (!$_SESSION['showKK']) {
+            return;
+        }
+
         if (SYS::$调试) {
             echo "[ $n ]";
 

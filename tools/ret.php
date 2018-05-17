@@ -1,6 +1,6 @@
 <?php
 
-include_once "/tools/sys.php";
+include_once "tools/sys.php";
 
 /**
  *
@@ -24,6 +24,10 @@ class ret
 
     private $返回user数据 = false;
 
+    // 返回 <项目.分组>的全部user
+    // 用于 <user>权限调整
+    private $返回pro的全部user数据 = false;
+
     #####################################
     # 如果 有不明错误 , 只返回 $OPT
     #
@@ -35,9 +39,23 @@ class ret
         // $this->RET['OPT'] = $this->OPT;
     }
 
+    public function 返回后续($n)
+    {
+        $this->addOPT('call', $n);
+    }
+    public function 清空指定BUF($n)
+    {
+        $this->addOPT('freeBUF', $n);
+    }
+
     public function 登录返回()
     {
         $this->返回user数据 = true;
+    }
+
+    public function 返回pro的全部user()
+    {
+        $this->返回pro的全部user数据 = true;
     }
 
     private function SQL同一个JID()
@@ -48,39 +66,45 @@ class ret
         // $role   = $_SESSION["role"];
         $JID    = $_SESSION["JID"];
         $分组 = $_SESSION["分组"];
+        $S      = &SYS::$DBNL;
 
-        $arr   = [];
-        $arr[] = [
-            'name' => 'work',
+        // SYS::KK('copy $DBNL', $S);
 
-            'sql'  => "SELECT *"
-            . " FROM  pro_work "
-            . " WHERE JID = " . $JID
-            . " AND FT > '" . $LT . "'"
-            . " AND CT > '" . $day10 . "'"
-            . " LIMIT 0 , 30",
-        ];
+        $arr = [];
 
+        // 返回 所有相关的 <项目>
+        // 考虑 <项目.分组.名称> 需要再<客户端>显示
+        //
         $arr[] = [
             'name' => 'projoct',
 
-            'sql'  => "SELECT *"
-            . " FROM  projoct "
-            . " WHERE JID = " . $JID
-            . " AND FT > '" . $LT . "'",
+            'sql'  => "SELECT distinct b.*"
+            . " FROM  " . $S['pro_user'] . " as a"
+            . " ," . $S['pro'] . " as b"
+            . " WHERE a.UID = " . $UID
+            . " AND a.JID = b.JID"
+            . " AND b.FT > '" . $LT . "'",
         ];
 
         $arr[] = [
             'name' => 'pro_user',
 
-            'sql'  => "SELECT a.* , b.name "
-            . " FROM  pro_user as a"
-            . " ,projoct as b"
-            . " WHERE a.UID = " . $UID
-            . " AND a.JID = b.JID"
-            . " AND a.FT > '" . $LT . "'",
+            'sql'  => "SELECT * "
+            . " FROM  " . $S['pro_user']
+            . " WHERE UID = " . $UID
+            . " AND FT > '" . $LT . "'",
         ];
 
+        $arr[] = [
+            'name' => 'work',
+
+            'sql'  => "SELECT *"
+            . " FROM  " . $S['work']
+            . " WHERE JID = " . $JID
+            . " AND FT > '" . $LT . "'"
+            . " AND CT > '" . $day10 . "'"
+            . " LIMIT 0 , 30",
+        ];
         return $arr;
     }
     private function SQL换了JID()
@@ -91,34 +115,40 @@ class ret
         // $role   = $_SESSION["role"];
         $JID    = $_SESSION["JID"];
         $分组 = $_SESSION["分组"];
+        $S      = &SYS::$DBNL;
 
-        $arr   = [];
-        $arr[] = [
-            'name' => 'work',
+        // SYS::KK('copy $DBNL', $S);
 
-            'sql'  => "SELECT *"
-            . " FROM  pro_work "
-            . " WHERE JID = " . $JID
-            . " AND CT > '" . $day10 . "'"
-            . " LIMIT 0 , 30",
-        ];
+        $arr = [];
 
+        // 返回 所有相关的 <项目>
+        // 考虑 <项目.分组.名称> 需要再<客户端>显示
+        //
         $arr[] = [
             'name' => 'projoct',
 
-            'sql'  => "SELECT *"
-            . " FROM  projoct "
-            . " WHERE JID = " . $JID,
+            'sql'  => "SELECT distinct b.*"
+            . " FROM  " . $S['pro_user'] . " as a"
+            . " ," . $S['pro'] . " as b"
+            . " WHERE a.UID = " . $UID
+            . " AND a.JID = b.JID",
         ];
 
         $arr[] = [
             'name' => 'pro_user',
 
-            'sql'  => "SELECT a.* , b.name "
-            . " FROM  pro_user as a"
-            . " ,projoct as b"
-            . " WHERE a.UID = " . $UID
-            . " AND a.JID = b.JID",
+            'sql'  => "SELECT * "
+            . " FROM  " . $S['pro_user']
+            . " WHERE UID = " . $UID,
+        ];
+
+        $arr[] = [
+            'name' => 'work',
+
+            'sql'  => "SELECT *"
+            . " FROM  " . $S['work']
+            . " WHERE JID = " . $JID
+            . " AND CT > '" . $day10 . "'",
         ];
 
         return $arr;
@@ -141,6 +171,18 @@ class ret
             ];
         }
 
+        if ($this->返回pro的全部user数据) {
+            $a[] = [
+                'name' => 'pro_all_user',
+
+                'sql'  => "SELECT a.* b.name "
+                . " FROM  pro_user as a "
+                . " ,user as b"
+                . " WHERE JID = " . $_SESSION['JID']
+                . " AND group = " . $_SESSION['分组']
+                . " AND a.UID = b.UID",
+            ];
+        }
         return $a;
     }
 
@@ -202,6 +244,16 @@ class ret
         }
     }
 
+    public function addOPT($name, $val)
+    {
+        if (array_key_exists($name, $this->OPT)) {
+            $this->OPT[$name][] = $val;
+        } else {
+            $this->OPT[$name] = [$val];
+        }
+
+    }
+
     public function setOPT($name, $val)
     {
         $this->OPT[$name] = $val;
@@ -256,6 +308,7 @@ class ret
         $this->setOPT('ERR', '90');
         $this->setOPT('MSG', '还没注册');
 
+        $this->返回后续('还没注册');
         $this->toStr_end();
     }
 
@@ -288,7 +341,7 @@ class ret
         $this->ERR = true;
 
         $this->setOPT('ERR', '90');
-        $this->setOPT('MSG', '不是管理员');
+        $this->setOPT('MSG', '权限错误');
 
         $this->toStr_end();
     }
@@ -298,6 +351,7 @@ class ret
     #
     public function codeERR_end()
     {
+        // 就是 code 无法转换成 openid
         $this->ERR = true;
 
         $this->setOPT('ERR', '90');
@@ -325,6 +379,22 @@ class ret
     public function 返回邀请码($INID)
     {
         $this->setOPT('INID', $INID);
+    }
+
+    ################################
+    #  客户端 跳转到指定的<page>
+    #
+    public function toPage($p)
+    {
+        $this->setOPT('toPage', $p);
+    }
+
+    ################################
+    #  返回 session_id
+    #
+    public function 返回session_id()
+    {
+        $this->setOPT('_SID', session_id());
     }
 
     ################################
@@ -359,5 +429,9 @@ if (SYS::$调试) {
 }
 
 $RET = $GLOBALS['RET'] = new ret();
+
+if (!empty($_POST['_SID'])) {
+    session_id($_POST['_SID']);
+}
 
 session_start();

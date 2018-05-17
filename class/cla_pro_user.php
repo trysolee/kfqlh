@@ -1,5 +1,8 @@
 <?php
 
+include_once 'tools/sdb_one.php';
+include_once 'class/cla_user.php';
+
 class cla_pro_user extends sdb_one
 {
 
@@ -15,29 +18,18 @@ class cla_pro_user extends sdb_one
         $分组 = $_SESSION['分组'];
 
         $sql = "SELECT * FROM  " . $o->_DBN()
-            . ' where JID=' . $JID;
+            . " where JID=" . $JID
+            . " AND GRO='" . $分组 . "'";
 
         $d = SDB::SQL_s($sql);
 
         $a = [];
         foreach ($d as $k => $l) {
 
-            $v = $l['JSON'];
-            if (!empty($v[$分组])) {
-                $a[$l['UID']] = $v[$分组]['role'];
-            }
+            $a[$l['UID']] = $l['JSON']['role'];
+
         }
         SYS::KK('项目人员权限', $a);
-    }
-
-    #=====================================
-    # 当有 user 当前<项目.分组> 被踢出来
-    # 需要 找一个<项目.分组>来 充当<当前>
-    #
-    public static function get任一个($UID)
-    {
-        $o = new cla_pro_user();
-        return $o->选一个项目分组($UID);
     }
 
     #=====================================
@@ -47,58 +39,75 @@ class cla_pro_user extends sdb_one
     {
         return cla_pro_user::getOne(
             $_SESSION['JID'],
+            $_SESSION['分组'],
             $_SESSION['UID']);
     }
 
     #=====================================
     # 获取一个 user by ID
     #
-    public static function getOne($JID, $UID)
+    public static function getOne($JID, $分组, $UID)
     {
         $o = new cla_pro_user();
-        return $o->getObj($JID, $UID);
+        return $o->getObj($JID, $分组, $UID);
+    }
+
+    public static function getOne_end(
+        $JID, $分组, $UID) {
+
+        $o = new cla_pro_user();
+        $o = $o->getObj($JID, $分组, $UID);
+        if ($o->isOK()) {
+            return $o;
+        }
+
+        //
+        $GLOBALS['RET']->错误终止_end('不属于[ 项目.分组 ]');
+        exit();
+
     }
 
     // 只能操作 当前 project
     public static function putOne($UID, $name,
         $JID, $分组, $inUID) {
 
-        $o = cla_pro_user::getOne($JID, $UID);
+        $o = cla_pro_user::getOne($JID, $分组, $UID);
 
         if (!$o->isOK()) {
             $o->_NEW([
                 'UID'  => $UID,
+                'GRO'  => $分组,
                 'JID'  => $JID,
                 'JSON' => [
-
+                    'name'   => $name,
+                    'inUser' => $inUID,
+                    'role'   => cla_project::$FK[$分组]['roleNEW'],
                 ],
                 'FT'   => SYS::$NOW,
             ]);
         }
-
-        $o->加入分组($分组, $name, $inUID);
         return $o;
     }
 
-    public static function 他是成员(
-        $JID, $分组, $UID) {
-        $o = cla_pro_user::getOne($JID, $UID);
-        if (!$o->isOK()) {
-            return false;
-        };
+    // 只能操作 当前 project
+    public static function get任一个($UID)
+    {
 
-        return $o->有分组($分组);
-    }
+        $o = new cla_pro_user();
 
-    public static function 他是成员_end(
-        $JID, $分组, $UID) {
-        if (!cla_pro_user::他是成员(
-            $JID, $分组, $UID)) {
+        $sql = "SELECT * FROM  " . $o->_DBN()
+            . " where UID=" . $UID;
 
-            $GLOBALS['RET']->错误终止_end('不属于[ 项目.分组 ]');
-            exit();
+        $o->DAT = SDB::SQL($sql);
+
+        if (!SDB::$notFind) {
+
+            $o->ready = true;
+            $o->addBUF();
+
         }
 
+        return $o;
     }
 
     public static function role合法性_end(
@@ -110,11 +119,11 @@ class cla_pro_user extends sdb_one
 
     public static function getRole(
         $JID, $分组, $UID) {
-        $o = cla_pro_user::getOne($JID, $UID);
+        $o = cla_pro_user::getOne($JID, $分组, $UID);
         if (!$o->isOK()) {
             return [];
         }
-        return $o->role($分组);
+        return $o->get_role();
 
     }
 
@@ -129,20 +138,15 @@ class cla_pro_user extends sdb_one
         }
 
         ############################
-        # $UID 原来必须在 分组里面
-        #
-        if (!cla_pro_user::他是成员(
-            $JID, $分组, $UID)) {
-            $GLOBALS['RET']->错误终止_end('增加了UID');
-        }
-
-        ############################
         # 权限 合法性
         #
         cla_pro_user::role合法性_end($分组, $role);
 
-        $o = cla_pro_user::getOne($JID, $UID);
-        $o->set_role($分组, $role);
+        ############################
+        # $UID 原来必须在 分组里面
+        #
+        $o = cla_pro_user::getOne_end($JID, $分组, $UID);
+        $o->set_role($role);
 
     }
 
@@ -182,12 +186,12 @@ class cla_pro_user extends sdb_one
             return true;
         }
 
-        $o = cla_pro_user::getOne($JID, $UID);
+        $o = cla_pro_user::getOne($JID, $分组, $UID);
         if (!$o->isOK()) {
             return false;
         }
 
-        return $o->is管理员($分组);
+        return $o->is管理员();
     }
 
     #=====================================
@@ -196,7 +200,7 @@ class cla_pro_user extends sdb_one
     #
     #=====================================
 
-    public $JID;
+    public $JID, $分组;
 
     public function _DB()
     {
@@ -221,6 +225,7 @@ class cla_pro_user extends sdb_one
     {
 
         return "JID=" . $this->JID
+        . " AND GRO='" . $this->分组 . "'"
             . " AND UID=" . $ID;
     }
 
@@ -232,13 +237,18 @@ class cla_pro_user extends sdb_one
     {
         return $this->DAT['UID'];
     }
+    public function get分组()
+    {
+        return $this->DAT['GRO'];
+    }
 
     public function addBUF()
     {
-        $JID = $this->DAT['JID'];
-        $UID = $this->DAT['UID'];
+        $JID    = $this->DAT['JID'];
+        $UID    = $this->DAT['UID'];
+        $分组 = $this->DAT['GRO'];
 
-        $id = $JID . '_' . $UID;
+        $id = $JID . $分组 . $UID;
 
         SYS::$BUF[$this->_DB()]
         [$id] = $this;
@@ -247,135 +257,69 @@ class cla_pro_user extends sdb_one
     public function getBUF($ID)
     {
 
-        $JID = $this->JID;
-        $UID = $ID;
+        $JID    = $this->JID;
+        $分组 = $this->分组;
+        $UID    = $ID;
 
-        $id = $JID . '_' . $UID;
+        $id = $JID . $分组 . $UID;
 
-        if (!empty(SYS::$BUF[$this->_DB()]
-            [$id])) {
+        // $o = SYS::$BUF[$this->_DB()]
+        //     [$id];
+        // SYS::KK('getBUF', $o);
 
-            return SYS::$BUF[$this->_DB()]
-                [$id];
-        } else {
-            return null;
-        }
+        return @SYS::$BUF[$this->_DB()]
+            [$id];
+
     }
 
-    public function getObj($JID, $UID)
+    public function getObj($JID, $分组, $UID)
     {
-        $this->JID = $JID;
+        $this->JID    = $JID;
+        $this->分组 = $分组;
         return $this->getObjByID($UID);
     }
 
     #=====================================
     #
     #
-    public function 加入分组($分组, $name, $inUID)
-    {
-        if ($this->有分组($分组)) {
-            // 如果已经是分组成员
-            // 不要修改<分组>设置
-            //
-            return;
-        }
 
-        $this->DAT['JSON'][$分组] = [
-            'name'   => $name,
-            'role'   => cla_project::$FK[$分组]['roleNEW'],
-            'inUser' => $inUID,
-        ];
-
-        $this->fixed();
-    }
-
-    public function 有分组($分组)
-    {
-        return !empty($this->DAT['JSON'][$分组]);
-    }
-
-    public function is管理员($分组)
+    public function is管理员()
     {
         return in_array('管理员',
-            $this->role($分组)
+            $this->get_role()
         );
     }
 
-    public function role($分组)
+    public function get_role()
     {
-        if (!$this->有分组($分组)) {
-            return [];
-        }
-        return $this->DAT['JSON'][$分组]['role'];
+        return $this->DAT['JSON']['role'];
     }
 
-    public function set_role($分组, $role)
+    public function set_role($role)
     {
+        // length == 0 // 删除 role
         if (count($role) == 0) {
 
-            unset($this->DAT['JSON'][$分组]);
+            $this->del();
 
-            if (!$this->他在项目()) {
-                $this->del();
-            }
-
+            // 如果 user 被当前<JID.分组> 提出
+            // 清空 user的<当前项目.分组>数据
+            // 等待下次登录时 , 随机挑选一个
+            // 作为<当前项目.分组>
+            //
             $UID = $this->getUID();
 
             $u = cla_user::getByID($UID);
             if ($u->is当前项目分组($this->getJID()
-                , $分组)) {
-                $o = cla_pro_user::get任一个($UID);
-                $u->set当前byPro_User($o);
+                , $this->get分组())) {
+
+                $u->free当前项目分组();
             }
 
         } else {
-            $this->DAT['JSON'][$分组]['role'] = $role;
+            $this->DAT['JSON']['role'] = $role;
         }
         $this->fixed();
-    }
-
-    public function 他在项目()
-    {
-
-        if (!$this->isOK()) {
-            return false;
-        }
-
-        if (count($this->DAT['JSON']) < 1) {
-            return false;
-        }
-
-        return true;
-    }
-
-    #=====================================
-    # 当有 user 当前<项目.分组> 被踢出来
-    # 需要 找一个<项目.分组>来 充当<当前>
-    #
-    public function 选一个项目分组($UID)
-    {
-
-        $sql = "SELECT * FROM  " . $this->_DBN()
-            . ' where UID=' . $UID;
-
-        $this->DAT = SDB::SQL($sql);
-
-        if (SDB::$notFind) {
-            // ready 初始化已经是false
-            return $this;
-        }
-
-        // 如果 刚好 BUF里面存储了 $this
-        // 那就直接返回 BUF 里面的
-        $this->JID = $this->getJID();
-        $o         = $this->getBUF($ID);
-        if ($o) {
-            return $o;
-        }
-
-        $this->ready = true;
-        $this->addBUF();
-        return $this;
     }
 
 }

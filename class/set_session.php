@@ -1,7 +1,7 @@
 <?php
 
-include_once "/tools/sys.php";
-include_once "/tools/val.php";
+include_once "tools/sys.php";
+include_once "tools/val.php";
 
 /**
  *
@@ -19,14 +19,13 @@ class Session
     public static function set当前byUser_end($u)
     {
 
-        if (empty($u->DAT['JSON']['JID'])) {
+        if ($u->DAT['JSON']['JID'] == -1) {
             // 没有 当前项目
             $o = cla_pro_user::get任一个($u->getUID());
-            $u->set当前byPro_User($o);
-            if (empty($u->DAT['JSON']['JID'])) {
-                // 还是 没有 当前项目
+            if (!$o->isOK()) {
                 $GLOBALS['RET']->不在项目_end();
             }
+            $u->set当前byPro_User($o);
         }
         $_SESSION["JID"]    = $u->get当前项目ID();
         $_SESSION["分组"] = $u->get当前分组();
@@ -35,11 +34,23 @@ class Session
 
     public static function set($user, $openid)
     {
+
         unset($_SESSION['supAdmin']);
         unset($_SESSION['Admin']);
 
+        //
+
+        if (@$_POST['cType'] == 'browser') {
+            $_SESSION['showKK'] = true;
+        } else {
+            $_SESSION['showKK'] = false;
+        }
+
         // 如果 是 系统管理员 , 不会读取项目的权限
         $_SESSION["role"] = [];
+
+        // 返回 _SID
+        $GLOBALS['RET']->返回session_id();
 
         if ($user->isOK()) {
             #
@@ -83,7 +94,7 @@ class Session
 
             } else {
 
-                SYS::KK('非管理员', null);
+                // SYS::KK('非管理员', '不是管理员');
                 $_SESSION["role"] = cla_pro_user::getRole($JID, $分组, $UID);
             }
 

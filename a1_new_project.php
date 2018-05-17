@@ -3,8 +3,8 @@
 ## 新建 project ( 超级管理员 权限 )
 #
 
-include_once "/tools/ret.php";
-include_once "/tools/sys.php";
+include_once "tools/ret.php";
+include_once "tools/sys.php";
 include_once "class/cla_project.php";
 
 ###############################

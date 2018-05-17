@@ -3,9 +3,9 @@
 # 更改 当前项目.名称
 #
 
-include_once "/class/cla_project.php";
-include_once "/class/cla_user.php";
-include_once "/class/cla_pro_user.php";
+include_once "class/cla_project.php";
+include_once "class/cla_user.php";
+include_once "class/cla_pro_user.php";
 
 SYS::KK('_SESSION', $_SESSION);
 $j = cla_project::get当前();
@@ -19,3 +19,5 @@ $u = cla_user::getMyself();
 SYS::KK('USER', $u->DAT);
 
 cla_pro_user::项目_分组_权限();
+
+SYS::KK('session_id', session_id());

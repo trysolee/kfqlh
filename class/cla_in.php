@@ -2,8 +2,7 @@
 
 # 邀请码
 
-include_once "/tools/sdb.php";
-include_once "/tools/ret.php";
+include_once 'tools/sdb_one.php';
 
 class cla_in extends sdb_one
 {

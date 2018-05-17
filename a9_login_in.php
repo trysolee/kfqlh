@@ -16,13 +16,11 @@
 # 5 . 初始化'超级管理员'
 #
 
-include_once "/tools/ret.php";
-include_once "/tools/sys.php";
-include_once "/tools/begin.php";
+include_once "tools/begin.php";
 
-include_once "/class/cla_openid.php";
-include_once "/class/cla_in.php";
-include_once "/class/set_session.php";
+include_once "class/cla_openid.php";
+include_once "class/cla_in.php";
+include_once "class/set_session.php";
 
 SYS::参数检查_end(['code', 'in', 'username']);
 

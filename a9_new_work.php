@@ -3,8 +3,8 @@
 # 创建 工作贴
 #
 
-include_once "/tools/ret.php";
-include_once "/class/cla_work.php";
+include_once "tools/ret.php";
+include_once "class/cla_work.php";
 
 ###############################
 # 参数检查

@@ -3,9 +3,9 @@
 # 移去一个 系统管理员
 #
 
-include_once "/tools/ret.php";
-include_once "/tools/sys.php";
-include_once "/class/cla_project.php";
+include_once "tools/ret.php";
+include_once "tools/sys.php";
+include_once "class/cla_project.php";
 
 ###############################
 # 权限

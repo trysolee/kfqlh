@@ -3,13 +3,10 @@
 // 设置返回json格式数据
 header('content-type:application/json;charset=utf8');
 
-$f = false;
+$f = [];
 
-$t = true;
+$t = 'abc';
 
-if ($a = $f) {
-    echo "string";
-}
+$f['try'] = [$t];
 
-
-echo gettype($f);
+print_r($f) ;

@@ -36,5 +36,6 @@ Session::set($u, $openCla->getOpenID());
 ###############################
 # 结束返回
 #
+$RET->返回后续('登录OK');
 $RET->登录返回();
 $RET->toStr_end();

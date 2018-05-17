@@ -1,12 +1,11 @@
 <?php
 ###############################
 # 计划 取消
+# TODO 取消
 #
 
-include_once "/tools/sys.php";
-include_once "/tools/ret.php";
-include_once "/class/cla_user.php";
-include_once "/class/cla_work.php";
+include_once "class/cla_user.php";
+include_once "class/cla_work.php";
 
 ###############################
 # 参数检查

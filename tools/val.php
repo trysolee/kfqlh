@@ -2,8 +2,8 @@
 
 # 邀请码
 
-include_once "/tools/sdb.php";
-include_once "/tools/ret.php";
+include_once "tools/sdb.php";
+include_once "tools/ret.php";
 
 class VAL extends sdb_one
 {

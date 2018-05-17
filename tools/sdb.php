@@ -1,15 +1,23 @@
 <?php
 
-include_once '/tools/sdb_one.php';
+include_once 'tools/sdb_one.php';
 
 class SDB
 {
+    private static $local = true;
     private static $ready = false;
 
     private static $URL   = 'localhost';
     private static $admin = 'root';
     private static $pw    = 'root';
     private static $table = 'kfqlh';
+
+    private static $_URL   = 'sqld-gz.bcehost.com';
+    private static $_post  = '3306'; // 默认端口
+    private static $_admin = 'bd160c68b0dd42eab1975d8ae403495f';
+    private static $_pw    = 'e422d14c4bf74932ac7c6f470e321596';
+    private static $_table = 'zanZHPfBNBZgvZgraebU';
+
     private static $link;
 
     public static $dateTimeName =
@@ -25,10 +33,20 @@ class SDB
     private static function bSet()
     {
 
-        $URL   = SDB::$URL;
-        $admin = SDB::$admin;
-        $pw    = SDB::$pw;
-        $table = SDB::$table;
+        ini_set('display_errors', true);
+        error_reporting(E_ALL);
+
+        if (SDB::$local) {
+            $URL   = SDB::$URL;
+            $admin = SDB::$admin;
+            $pw    = SDB::$pw;
+            $table = SDB::$table;
+        } else {
+            $URL   = SDB::$_URL . ':' . SDB::$_post;
+            $admin = SDB::$_admin;
+            $pw    = SDB::$_pw;
+            $table = SDB::$_table;
+        }
 
         //连接数据库
         SDB::$link = $link = mysql_connect($URL, $admin, $pw) or die("Unable to connect to the MySQL!");
@@ -79,6 +97,7 @@ class SDB
 
         if ($result) {
 
+
             if ($row = mysql_fetch_assoc($result)) {
 
                 if (array_key_exists('JSON', $row)) {
@@ -90,6 +109,7 @@ class SDB
                 return $row;
             }
         } else {
+
             $GLOBALS['RET']->错误终止_end('SDB 1 ' . $sql);
 
         }
@@ -120,7 +140,8 @@ class SDB
             return $arr;
 
         } else {
-            $GLOBALS['RET']->错误终止_end('SDB 1 ' . $sql);
+
+            $GLOBALS['RET']->错误终止_end('SDB 2 ' . $sql);
 
         }
 

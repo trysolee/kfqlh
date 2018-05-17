@@ -1,7 +1,8 @@
 <?php
 
-include_once '/tools/begin.php';
-include_once "/class/cla_openid.php";
+include_once 'tools/sdb_one.php';
+include_once 'tools/begin.php';
+include_once "class/cla_openid.php";
 
 class cla_user extends sdb_one
 {
@@ -32,7 +33,9 @@ class cla_user extends sdb_one
         $o = new cla_user();
         $o->_NEW([
             'name' => $userName,
-            'JSON' => [],
+            'JSON' => [
+                'JID' => -1,
+            ],
             'FT'   => SYS::$NOW,
             'LT'   => SYS::$NOW,
         ]);
@@ -61,7 +64,7 @@ class cla_user extends sdb_one
     public function fixed()
     {
         $this->fix = true;
-        if ($_SESSION['UID'] == $this->getUID()) {
+        if (@$_SESSION['UID'] == $this->getUID()) {
             $GLOBALS['RET']->登录返回();
         }
     }
@@ -93,6 +96,14 @@ class cla_user extends sdb_one
         return $this->DAT['JSON']['分组'];
     }
 
+    public function free当前项目分组()
+    {
+
+        $this->DAT['JSON']['JID'] = -1;
+        // $this->DAT['JSON']['分组'] = $分组;
+        $this->fixed();
+    }
+
     public function set当前项目分组($JID, $分组)
     {
 
@@ -104,15 +115,10 @@ class cla_user extends sdb_one
     public function set当前byPro_User($obj)
     {
 
-        if ($obj->isOK()) {
-            $this->set当前项目分组(
-                $obj->getJID(),
-                $obj->getUID()
-            );
-        } else {
-            unset($this->DAT['JSON']['JID']);
-            unset($this->DAT['JSON']['分组']);
-        }
+        $this->set当前项目分组(
+            $obj->getJID(),
+            $obj->get分组()
+        );
 
         $this->fixed();
     }

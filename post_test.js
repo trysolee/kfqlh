@@ -39,6 +39,7 @@ function login_admin() {
         ///
         {
             code: 'admin',
+            cType: 'browser',
         })
 }
 
@@ -49,6 +50,7 @@ function login_user() {
         ///
         {
             code: 'user',
+            cType: 'browser',
         })
 }
 

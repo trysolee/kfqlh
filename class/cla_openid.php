@@ -1,10 +1,8 @@
 <?php
-include_once "/tools/sys.php";
-include_once "/tools/sdb.php";
-include_once "/tools/ret.php";
-include_once "/class/get_openid.php";
+include_once 'tools/sdb_one.php';
 
-include_once "/class/cla_user.php";
+include_once "class/get_openid.php";
+include_once "class/cla_user.php";
 # openid
 
 class cla_openid extends sdb_one

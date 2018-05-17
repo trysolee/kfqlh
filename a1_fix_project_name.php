@@ -3,9 +3,9 @@
 # 更改 当前项目.名称
 #
 
-include_once "/tools/ret.php";
-include_once "/tools/sys.php";
-include_once "/class/cla_project.php";
+include_once "tools/ret.php";
+include_once "tools/sys.php";
+include_once "class/cla_project.php";
 
 ###############################
 # 权限

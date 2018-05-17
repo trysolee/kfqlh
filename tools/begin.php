@@ -43,12 +43,11 @@
 # # 更换 '项目.分组' 登录
 #
 #
-include_once '/tools/sys.php';
-include_once "/class/cla_pro_user.php";
-include_once "/class/cla_project.php";
-include_once "/class/cla_user.php";
-include_once "/class/cla_openid.php";
-include_once "/class/set_session.php";
+include_once "class/cla_pro_user.php";
+include_once "class/cla_project.php";
+include_once "class/cla_user.php";
+include_once "class/cla_openid.php";
+include_once "class/set_session.php";
 
 class BEGIN
 {

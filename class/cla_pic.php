@@ -1,7 +1,6 @@
 <?php
 
-include_once '/tools/sdb.php';
-include_once "/tools/ret.php";
+include_once 'tools/sdb_one.php';
 
 class cla_pic extends sdb_one
 {

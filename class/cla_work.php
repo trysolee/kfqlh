@@ -1,10 +1,8 @@
 <?php
 
-include_once "/tools/ret.php";
-include_once '/tools/sdb.php';
-include_once "/tools/sys.php";
-include_once "/class/cla_pic.php";
-include_once "/class/cla_project.php";
+include_once 'tools/sdb_one.php';
+include_once "class/cla_pic.php";
+include_once "class/cla_project.php";
 
 class cla_work extends sdb_one
 {

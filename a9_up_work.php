@@ -5,8 +5,8 @@
 #  后续 上传图片 , 或上传文字
 #
 
-include_once "/tools/ret.php";
-include_once "/class/cla_work.php";
+include_once "tools/ret.php";
+include_once "class/cla_work.php";
 
 ###############################
 # 参数检查

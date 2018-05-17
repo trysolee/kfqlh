@@ -1,8 +1,8 @@
 <?php
 
-include_once "/tools/ret.php";
-include_once '/tools/sdb.php';
-include_once "/tools/sys.php";
+include_once "tools/ret.php";
+include_once 'tools/sdb.php';
+include_once "tools/sys.php";
 
 abstract class sdb_one
 {
@@ -16,6 +16,8 @@ abstract class sdb_one
     public $ready = false;
     public function isOK()
     {
+
+      
         return $this->ready;
     }
 
@@ -177,6 +179,7 @@ abstract class sdb_one
 
         $o = $this->getBUF($ID);
         if ($o) {
+
             return $o;
         }
 
@@ -186,12 +189,14 @@ abstract class sdb_one
         $this->DAT = SDB::SQL($sql);
 
         if (SDB::$notFind) {
+
             // ready 初始化已经是false
             return $this;
         }
 
         $this->ready = true;
         $this->addBUF();
+
         return $this;
     }
 

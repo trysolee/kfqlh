@@ -8,9 +8,7 @@
 # 不需要再提供参数
 #
 
-include_once "/tools/sdb.php";
-include_once "/tools/ret.php";
-include_once "/tools/sys.php";
+include_once 'tools/sdb_one.php';
 
 class cla_project extends sdb_one
 {
@@ -145,6 +143,27 @@ class cla_project extends sdb_one
     }
 
     #=====================================
+    #
+    # 检查 <项目.分组> 是否存在
+    # 并 返回这个 cla_project 
+    #
+    public static function 存在项目分组_end($JID, $分组)
+    {
+
+        $o = cla_project::getByID($JID);
+        if (!$o->isOK()) {
+            $GLOBALS['RET']->错误终止_end('项目不存在');
+            exit();
+        }
+        if (!array_key_exists($分组
+            , $o->DAT['JSON'])) {
+            $GLOBALS['RET']->错误终止_end('分组不存在');
+            exit();
+        }
+        return $o;
+    }
+
+    #=====================================
     # 获取一个 project 当前项目
     #
     # $JID 记录在 seesion 里面
@@ -221,7 +240,6 @@ class cla_project extends sdb_one
     #
     public function getJID()
     {
-
         return $this->DAT['JID'];
     }
 
