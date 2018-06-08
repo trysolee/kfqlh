@@ -22,12 +22,6 @@ class ret
     // false : 正常
     private $ERR = false;
 
-    private $返回user数据 = false;
-
-    // 返回 <项目.分组>的全部user
-    // 用于 <user>权限调整
-    private $返回pro的全部user数据 = false;
-
     #####################################
     # 如果 有不明错误 , 只返回 $OPT
     #
@@ -43,22 +37,41 @@ class ret
     {
         $this->addOPT('call', $n);
     }
+
     public function 清空指定BUF($n)
     {
         $this->addOPT('freeBUF', $n);
     }
 
+    private $返回user数据 = false;
     public function 登录返回()
     {
         $this->返回user数据 = true;
     }
 
+    // 返回 <项目.分组>的全部user
+    // 用于 <user>权限调整
+    private $返回pro的全部user数据 = false;
     public function 返回pro的全部user()
     {
         $this->返回pro的全部user数据 = true;
     }
 
-    private function SQL同一个JID()
+    // 标记 <换了项目>
+    private $换了项目t = false;
+    public function 换了项目()
+    {
+        $this->换了项目t = true;
+    }
+
+    // 标记 <换了分组>
+    private $换了分组t = false;
+    public function 换了分组()
+    {
+        $this->换了项目t = true;
+    }
+
+    private function 返回work()
     {
         $UID   = $_SESSION["UID"];
         $LT    = $_SESSION["LT"];
@@ -68,14 +81,59 @@ class ret
         $分组 = $_SESSION["分组"];
         $S      = &SYS::$DBNL;
 
-        // SYS::KK('copy $DBNL', $S);
+        if ($this->换了项目t) {
+            //
+            $this->清空指定BUF('work');
+            //
+            return [
+                'name' => 'work',
 
-        $arr = [];
+                'sql'  => "SELECT *"
+                . " FROM  " . $S['work']
+                . " WHERE JID = " . $JID
+                . " AND CT > '" . $day10 . "'",
+            ];
+        } else {
+            return [
+                'name' => 'work',
+
+                'sql'  => "SELECT *"
+                . " FROM  " . $S['work']
+                . " WHERE JID = " . $JID
+                . " AND FT > '" . $LT . "'"
+                . " AND CT > '" . $day10 . "'"
+                . " LIMIT 0 , 30",
+            ];
+        }
+
+    }
+
+    private $SQLs = [];
+
+    public function add_SQL($sql)
+    {
+        $this->SQLs[] = $sql;
+    }
+
+    private function SQL()
+    {
+
+        $UID   = $_SESSION["UID"];
+        $LT    = $_SESSION["LT"];
+        $day10 = $_SESSION["day10"];
+        // $role   = $_SESSION["role"];
+        $JID    = $_SESSION["JID"];
+        $分组 = $_SESSION["分组"];
+        $S      = &SYS::$DBNL;
+
+        $a = $this->SQLs;
+
+        $a[] = $this->返回work();
 
         // 返回 所有相关的 <项目>
         // 考虑 <项目.分组.名称> 需要再<客户端>显示
         //
-        $arr[] = [
+        $a[] = [
             'name' => 'projoct',
 
             'sql'  => "SELECT distinct b.*"
@@ -86,7 +144,7 @@ class ret
             . " AND b.FT > '" . $LT . "'",
         ];
 
-        $arr[] = [
+        $a[] = [
             'name' => 'pro_user',
 
             'sql'  => "SELECT * "
@@ -95,79 +153,13 @@ class ret
             . " AND FT > '" . $LT . "'",
         ];
 
-        $arr[] = [
-            'name' => 'work',
-
-            'sql'  => "SELECT *"
-            . " FROM  " . $S['work']
-            . " WHERE JID = " . $JID
-            . " AND FT > '" . $LT . "'"
-            . " AND CT > '" . $day10 . "'"
-            . " LIMIT 0 , 30",
-        ];
-        return $arr;
-    }
-    private function SQL换了JID()
-    {
-        $UID   = $_SESSION["UID"];
-        $LT    = $_SESSION["LT"];
-        $day10 = $_SESSION["day10"];
-        // $role   = $_SESSION["role"];
-        $JID    = $_SESSION["JID"];
-        $分组 = $_SESSION["分组"];
-        $S      = &SYS::$DBNL;
-
-        // SYS::KK('copy $DBNL', $S);
-
-        $arr = [];
-
-        // 返回 所有相关的 <项目>
-        // 考虑 <项目.分组.名称> 需要再<客户端>显示
-        //
-        $arr[] = [
-            'name' => 'projoct',
-
-            'sql'  => "SELECT distinct b.*"
-            . " FROM  " . $S['pro_user'] . " as a"
-            . " ," . $S['pro'] . " as b"
-            . " WHERE a.UID = " . $UID
-            . " AND a.JID = b.JID",
-        ];
-
-        $arr[] = [
-            'name' => 'pro_user',
-
-            'sql'  => "SELECT * "
-            . " FROM  " . $S['pro_user']
-            . " WHERE UID = " . $UID,
-        ];
-
-        $arr[] = [
-            'name' => 'work',
-
-            'sql'  => "SELECT *"
-            . " FROM  " . $S['work']
-            . " WHERE JID = " . $JID
-            . " AND CT > '" . $day10 . "'",
-        ];
-
-        return $arr;
-    }
-    private function SQL()
-    {
-        if ($_SESSION['JID_LT'] == $_SESSION['JID']) {
-            $a = $this->SQL同一个JID();
-        } else {
-            $a = $this->SQL换了JID();
-        }
-
         if ($this->返回user数据) {
             $a[] = [
                 'name' => 'user_my',
 
                 'sql'  => "SELECT *"
                 . " FROM  user "
-                . " WHERE UID = " . $_SESSION["UID"],
+                . " WHERE UID = " . $UID,
             ];
         }
 
@@ -175,12 +167,38 @@ class ret
             $a[] = [
                 'name' => 'pro_all_user',
 
-                'sql'  => "SELECT a.* b.name "
+                'sql'  => "SELECT * "
+                . " FROM  pro_user "
+                . " WHERE JID = " . $JID
+                . " AND GRO = '" . $分组 . "'",
+            ];
+        }
+
+        if ($this->换了分组t) {
+            //
+            $this->清空指定BUF('user');
+            //
+            $a[] = [
+                'name' => 'user',
+
+                'sql'  => "SELECT b.UID , b.name "
                 . " FROM  pro_user as a "
                 . " ,user as b"
-                . " WHERE JID = " . $_SESSION['JID']
-                . " AND group = " . $_SESSION['分组']
+                . " WHERE a.JID = " . $JID
+                . " AND GRO = '" . $分组 . "'"
                 . " AND a.UID = b.UID",
+            ];
+        } else {
+            $a[] = [
+                'name' => 'user',
+
+                'sql'  => "SELECT b.UID , b.name "
+                . " FROM  pro_user as a "
+                . " ,user as b"
+                . " WHERE a.JID = " . $JID
+                . " AND GRO = '" . $分组 . "'"
+                . " AND a.UID = b.UID"
+                . " AND a.FT > '" . $LT . "'",
             ];
         }
         return $a;
@@ -280,6 +298,7 @@ class ret
                 $this->setOPT('Admin', 'true');
             }
         }
+
         //
         $Ret = [
             'OPT' => $this->OPT,

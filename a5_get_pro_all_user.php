@@ -2,8 +2,11 @@
 ########################################
 # 返回 <分组>的全部 <user>
 
+include_once "tools/sdb.php";
 include_once "class/cla_project.php";
 include_once "class/cla_pro_user.php";
+
+SDB::bSet();
 
 cla_pro_user::我是分组管理员_end();
 

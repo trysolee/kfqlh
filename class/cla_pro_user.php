@@ -67,7 +67,7 @@ class cla_pro_user extends sdb_one
 
     }
 
-    // 只能操作 当前 project
+    // 
     public static function putOne($UID, $name,
         $JID, $分组, $inUID) {
 

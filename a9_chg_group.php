@@ -22,12 +22,20 @@ $分组 = $_POST['group'];
 $UID = $_SESSION['UID'];
 $u   = cla_user::getByID($UID);
 
+$RET->换了分组();
+
 if (SYS::is系统管理员()) {
+
+    if ($_SESSION['JID'] != $JID) {
+        $RET->换了项目();
+    }
 
     cla_project::存在项目分组_end($JID, $分组);
 
     $u->set当前项目分组($JID, $分组);
     Session::set当前分组($JID, $分组);
+    //
+
     $RET->toPage('首页');
     $RET->toStr_end();
     return;
@@ -36,7 +44,13 @@ if (SYS::is系统管理员()) {
 cla_pro_user::getOne_end($JID, $分组, $UID);
 
 $u->set当前项目分组($JID, $分组);
+
+if ($_SESSION['JID'] != $JID) {
+    $RET->换了项目();
+}
+
 Session::set当前分组($JID, $分组);
+
 
 ###############################
 # 结束返回

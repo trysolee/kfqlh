@@ -3,10 +3,8 @@
 // 设置返回json格式数据
 header('content-type:application/json;charset=utf8');
 
-$f = [];
+$f   = [];
+$f[] = 'abc';
+$f[] = 'a';
 
-$t = 'abc';
-
-$f['try'] = [$t];
-
-print_r($f) ;
+print_r($f);

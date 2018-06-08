@@ -64,6 +64,31 @@ function login_xx() {
         })
 }
 
+function list_admin() {
+    httpPost( //
+        'a1_get_sys_admin.php',
+        ///
+        {})
+}
+
+function pro_all_user() {
+    httpPost( //
+        'a5_get_pro_all_user.php',
+        ///
+        {})
+}
+
+function new_pro() {
+    var JN = document.getElementById("JN4").value;
+    httpPost( //
+        'a1_new_project.php',
+        // 'test16.php',
+        ///
+        {
+            pro_name: JN,
+        })
+}
+
 function fix_pro_name() {
     var JN = document.getElementById("JN2").value;
     httpPost( //

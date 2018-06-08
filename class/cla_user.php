@@ -142,4 +142,9 @@ class cla_user extends sdb_one
         return $this->DAT['UID'];
     }
 
+    public function getUserName()
+    {
+        return $this->DAT['name'];
+    }
+
 }

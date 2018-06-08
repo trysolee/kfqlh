@@ -62,7 +62,8 @@ class Session
             #
             $UID = $_SESSION["UID"] = $user->getUID();
 
-            $_SESSION["LT"] = $user->getLT();
+            // $_SESSION["LT"] = $user->getLT();
+            $_SESSION["LT"] = 0;
             #
             $_SESSION['day10'] = date('Y-m-d', strtotime('-10 day'));
 
@@ -72,12 +73,6 @@ class Session
             Session::set当前byUser_end($user);
             $JID    = $_SESSION["JID"];
             $分组 = $_SESSION["分组"];
-
-            ###############################
-            # 保证第一次返回数据 ,
-            # 是以 全新项目去 缓存
-            #
-            $_SESSION['JID_LT'] = -1;
 
             ###############################
             # '超级管理员'

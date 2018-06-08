@@ -21,4 +21,3 @@ $j->fix分组名($_POST['name']);
 # 结束返回
 #
 $RET->toStr_end();
-

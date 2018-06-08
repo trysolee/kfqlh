@@ -30,7 +30,7 @@ class SDB
     #=====================================
     # 初始化
     #
-    private static function bSet()
+    public static function bSet()
     {
 
         ini_set('display_errors', true);
