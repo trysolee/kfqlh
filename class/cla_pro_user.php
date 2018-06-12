@@ -1,7 +1,7 @@
 <?php
 
-include_once 'tools/sdb_one.php';
-include_once 'class/cla_user.php';
+// include_once 'tools/sdb_one.php';
+// include_once 'class/cla_user.php';
 
 class cla_pro_user extends sdb_one
 {

@@ -43,69 +43,10 @@ class ret
         $this->addOPT('freeBUF', $n);
     }
 
-    private $返回user数据 = false;
+    private $is登录连接 = false;
     public function 登录返回()
     {
-        $this->返回user数据 = true;
-    }
-
-    // 返回 <项目.分组>的全部user
-    // 用于 <user>权限调整
-    private $返回pro的全部user数据 = false;
-    public function 返回pro的全部user()
-    {
-        $this->返回pro的全部user数据 = true;
-    }
-
-    // 标记 <换了项目>
-    private $换了项目t = false;
-    public function 换了项目()
-    {
-        $this->换了项目t = true;
-    }
-
-    // 标记 <换了分组>
-    private $换了分组t = false;
-    public function 换了分组()
-    {
-        $this->换了项目t = true;
-    }
-
-    private function 返回work()
-    {
-        $UID   = $_SESSION["UID"];
-        $LT    = $_SESSION["LT"];
-        $day10 = $_SESSION["day10"];
-        // $role   = $_SESSION["role"];
-        $JID    = $_SESSION["JID"];
-        $分组 = $_SESSION["分组"];
-        $S      = &SYS::$DBNL;
-
-        if ($this->换了项目t) {
-            //
-            $this->清空指定BUF('work');
-            //
-            return [
-                'name' => 'work',
-
-                'sql'  => "SELECT *"
-                . " FROM  " . $S['work']
-                . " WHERE JID = " . $JID
-                . " AND CT > '" . $day10 . "'",
-            ];
-        } else {
-            return [
-                'name' => 'work',
-
-                'sql'  => "SELECT *"
-                . " FROM  " . $S['work']
-                . " WHERE JID = " . $JID
-                . " AND FT > '" . $LT . "'"
-                . " AND CT > '" . $day10 . "'"
-                . " LIMIT 0 , 30",
-            ];
-        }
-
+        $this->is登录连接 = true;
     }
 
     private $SQLs = [];
@@ -118,89 +59,47 @@ class ret
     private function SQL()
     {
 
-        $UID   = $_SESSION["UID"];
-        $LT    = $_SESSION["LT"];
-        $day10 = $_SESSION["day10"];
-        // $role   = $_SESSION["role"];
-        $JID    = $_SESSION["JID"];
-        $分组 = $_SESSION["分组"];
-        $S      = &SYS::$DBNL;
+        $UID = $_SESSION["UID"];
+        $LT  = $_SESSION["LT"];
+
+        $JID = $_SESSION["家庭ID"];
+        $S   = &SYS::$DBNL;
 
         $a = $this->SQLs;
-
-        $a[] = $this->返回work();
 
         // 返回 所有相关的 <项目>
         // 考虑 <项目.分组.名称> 需要再<客户端>显示
         //
         $a[] = [
-            'name' => 'projoct',
+            'name' => 'user',
 
-            'sql'  => "SELECT distinct b.*"
-            . " FROM  " . $S['pro_user'] . " as a"
-            . " ," . $S['pro'] . " as b"
-            . " WHERE a.UID = " . $UID
-            . " AND a.JID = b.JID"
-            . " AND b.FT > '" . $LT . "'",
-        ];
-
-        $a[] = [
-            'name' => 'pro_user',
-
-            'sql'  => "SELECT * "
-            . " FROM  " . $S['pro_user']
-            . " WHERE UID = " . $UID
+            'sql'  => "SELECT *"
+            . " FROM  " . $S['user']
+            . " WHERE JID = " . $JID
             . " AND FT > '" . $LT . "'",
         ];
 
-        if ($this->返回user数据) {
+        $a[] = [
+            'name' => 'friend',
+
+            'sql'  => "SELECT b.* "
+            . " FROM " . $S['friend'] . ' as a'
+            . ' , ' . $S['user'] . ' as b'
+            . " WHERE a.JID1 = " . $JID
+            . " AND a.JID2 = b.JID"
+            . " AND b.FT > '" . $LT . "'",
+        ];
+
+        if ($this->is登录连接) {
             $a[] = [
-                'name' => 'user_my',
+                'name' => 'family',
 
                 'sql'  => "SELECT *"
-                . " FROM  user "
-                . " WHERE UID = " . $UID,
+                . " FROM  " . $S['family']
+                . " WHERE JID = " . $JID,
             ];
         }
 
-        if ($this->返回pro的全部user数据) {
-            $a[] = [
-                'name' => 'pro_all_user',
-
-                'sql'  => "SELECT * "
-                . " FROM  pro_user "
-                . " WHERE JID = " . $JID
-                . " AND GRO = '" . $分组 . "'",
-            ];
-        }
-
-        if ($this->换了分组t) {
-            //
-            $this->清空指定BUF('user');
-            //
-            $a[] = [
-                'name' => 'user',
-
-                'sql'  => "SELECT b.UID , b.name "
-                . " FROM  pro_user as a "
-                . " ,user as b"
-                . " WHERE a.JID = " . $JID
-                . " AND GRO = '" . $分组 . "'"
-                . " AND a.UID = b.UID",
-            ];
-        } else {
-            $a[] = [
-                'name' => 'user',
-
-                'sql'  => "SELECT b.UID , b.name "
-                . " FROM  pro_user as a "
-                . " ,user as b"
-                . " WHERE a.JID = " . $JID
-                . " AND GRO = '" . $分组 . "'"
-                . " AND a.UID = b.UID"
-                . " AND a.FT > '" . $LT . "'",
-            ];
-        }
         return $a;
     }
 
@@ -290,13 +189,13 @@ class ret
         SDB::_END();
 
         // 返回 登陆数据
-        if ($this->返回user数据) {
-            if (SYS::is超级管理员()) {
-                $this->setOPT('supAdmin', 'true');
-            }
-            if (SYS::is系统管理员()) {
-                $this->setOPT('Admin', 'true');
-            }
+        if ($this->is登录连接) {
+            // if (SYS::is超级管理员()) {
+            //     $this->setOPT('supAdmin', 'true');
+            // }
+            // if (SYS::is系统管理员()) {
+            //     $this->setOPT('Admin', 'true');
+            // }
         }
 
         //
@@ -309,10 +208,6 @@ class ret
         #  标记最后连接的时间
         #
         $_SESSION['LT'] = SYS::$NOW;
-
-        if (!empty($_SESSION['JID'])) {
-            $_SESSION['JID_LT'] = $_SESSION['JID'];
-        }
 
         // 将数组转成json格式
         echo json_encode($Ret, JSON_UNESCAPED_UNICODE);

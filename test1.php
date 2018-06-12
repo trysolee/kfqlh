@@ -3,8 +3,37 @@
 // 设置返回json格式数据
 header('content-type:application/json;charset=utf8');
 
-$f   = [];
-$f[] = 'abc';
-$f[] = 'a';
+$f = [
+    'go' => function () {
+        return 'abc';
+    },
+];
 
-print_r($f);
+/**
+ *
+ */
+class Ca
+{
+
+    public static $aa;
+
+    public function hh()
+    {
+
+        $d = Ca::$aa;
+        print_r($d['go']());
+    }
+
+}
+
+Ca::$aa = $f;
+
+// print_r($f['go']());
+//
+$d = Ca::$aa;
+
+// print_r(Ca::$aa['go']());
+
+// print_r($d['go']());
+//
+Ca::hh();

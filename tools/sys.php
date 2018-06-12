@@ -10,20 +10,42 @@ class SYS
 {
 
     public static $DBNL = [
-        'pic'      => 'pic',
-        'in'       => 'pro_in',
-        'val'      => 'val',
-        'openid'   => 'openid',
-        'user'     => 'user',
-        'pro'      => 'projoct',
-        'work'     => 'pro_work',
-        'pro_user' => 'pro_user',
+        'val'    => 'tb2_val',
+        'openid' => 'openid',
+        'user'   => 'tb2_user',
+        'friend' => 'tb2_friend',
+        'family' => 'tb2_family',
+    ];
+
+    public static $filePath = [
+
+        'sdb'        => 'tools/sdb.php',
+        'sdb_one'    => 'tools/sdb_one.php',
+        'get_openid' => 'class/get_openid.php',
+        'openid'     => 'class/cla_openid.php',
+        'begin'      => 'tools/begin.php',
+        'val'        => 'tools/val.php',
+        'session'    => 'class/tb_session.php',
+        'input'      => 'tools/input.php',
+
+        'user'       => 'class/tb_user.php',
+        '家庭'         => 'class/cla_family.php',
     ];
 
     ##############################
     # 调试
     #
     public static $调试 = true;
+
+    public static function if没测试_end()
+    {
+        if (SYS::$调试) {
+            return;
+        }
+        //
+        $GLOBALS['RET']->toPage('首页');
+        $GLOBALS['RET']->错误终止_end('没在测试');
+    }
 
     public static function KK($n, $v)
     {

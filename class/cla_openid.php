@@ -1,8 +1,10 @@
 <?php
-include_once 'tools/sdb_one.php';
 
-include_once "class/get_openid.php";
-include_once "class/cla_user.php";
+include_once SYS::$filePath['sdb_one'];
+include_once SYS::$filePath['get_openid'];
+
+// include_once "class/get_openid.php";
+// include_once "class/cla_user.php";
 # openid
 
 class cla_openid extends sdb_one
@@ -48,13 +50,15 @@ class cla_openid extends sdb_one
     {
         if (SYS::$调试) {
 
-            if ($code == 'user') {
-                return cla_openid::getByOpenid(SYS::$userOpenID);
-            }
+            return cla_openid::getByOpenid($code);
 
-            if ($code == 'admin') {
-                return cla_openid::getByOpenid(SYS::$adminOpenID);
-            }
+            // if ($code == 'user') {
+            //     return cla_openid::getByOpenid(SYS::$userOpenID);
+            // }
+
+            // if ($code == 'admin') {
+            //     return cla_openid::getByOpenid(SYS::$adminOpenID);
+            // }
 
         }
 
@@ -130,5 +134,13 @@ class cla_openid extends sdb_one
     public function getOpenID()
     {
         return $this->openID;
+    }
+
+    #####################################
+    # 返回 UID
+    #
+    public function getUID()
+    {
+        return $this->DAT['UID'];
     }
 }

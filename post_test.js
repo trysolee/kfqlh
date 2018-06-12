@@ -8,205 +8,51 @@ function sys() {
 
 function cls() {
     httpPost( //
-        'a9_login_in.php',
+        'tb0_del_all_db.php',
         // 'test16.php',
         ///
-        {
-            code: 'admin',
-            in : '777',
-            // in : '345',
-            username: 'abc'
-        })
+        {})
 }
 
-function begin() {
+function ZC() {
+    var code = document.getElementById("ZC1").value;
+    var h_NA = document.getElementById("ZC2").value;
+    var j_NA = document.getElementById("ZC3").value;
+    var LJ = document.getElementById("ZC4").value;
     httpPost( //
-        'a9_login_in.php',
-        // 'test16.php',
-        ///
-        {
-            code: 'admin',
-            // in : '777',
-            in : '345',
-            username: 'abc'
-        })
-}
-
-function login_admin() {
-    httpPost( //
-        'a9_login.php',
-        // 'test16.php',
-        ///
-        {
-            code: 'admin',
+        'tb9_login_in.php', {
+            code: code,
+            h_NA: h_NA,
+            j_NA: j_NA,
+            LJ: LJ,
             cType: 'browser',
         })
 }
 
-function login_user() {
+function DL() {
+    var DL1 = document.getElementById("DL1").value;
     httpPost( //
-        'a9_login.php',
-        // 'test16.php',
-        ///
-        {
-            code: 'user',
+        'tb9_login.php', {
+            code: DL1,
             cType: 'browser',
         })
 }
 
-function login_xx() {
+function add_c() {
+    var a = document.getElementById("add_c1").value;
     httpPost( //
-        'a9_login.php',
-        // 'test16.php',
-        ///
-        {
-            code: 'usxxer',
+        'tb5_add_c.php', {
+            h_NA: a,
         })
 }
 
-function list_admin() {
+function rename() {
+    var a = document.getElementById("rename1").value;
+    var b = document.getElementById("rename2").value;
     httpPost( //
-        'a1_get_sys_admin.php',
-        ///
-        {})
-}
-
-function pro_all_user() {
-    httpPost( //
-        'a5_get_pro_all_user.php',
-        ///
-        {})
-}
-
-function new_pro() {
-    var JN = document.getElementById("JN4").value;
-    httpPost( //
-        'a1_new_project.php',
-        // 'test16.php',
-        ///
-        {
-            pro_name: JN,
-        })
-}
-
-function fix_pro_name() {
-    var JN = document.getElementById("JN2").value;
-    httpPost( //
-        'a1_fix_project_name.php',
-        // 'test16.php',
-        ///
-        {
-            name: JN,
-        })
-}
-
-function fix_group_name() {
-    var JN = document.getElementById("JN3").value;
-    httpPost( //
-        'a5_fix_group_name.php',
-        // 'test16.php',
-        ///
-        {
-            name: JN,
-        })
-}
-
-function new_login_in() {
-    httpPost( //
-        'a9_new_login_in.php',
-        // 'test16.php',
-        ///
-        {})
-}
-// user 接收邀请
-function user_login_in() {
-    var i = document.getElementById("INID1").value;
-    httpPost( //
-        'a9_login_in.php',
-        // 'test16.php',
-        ///
-        {
-            code: 'user',
-            // in : '777',
-            in : i,
-            username: '飞机场'
-        })
-}
-// 改变分组
-function chg_group() {
-    var JID = document.getElementById("JID1").value;
-    var FZ = document.getElementById("FZ1").value;
-    httpPost( //
-        'a9_chg_group.php',
-        //
-        {
-            JID: JID,
-            group: FZ,
-        })
-}
-// 设置 管理员
-function set_sys_admin() {
-    var UID = document.getElementById("UID1").value;
-    httpPost( //
-        'a1_set_sys_admin.php',
-        // 'test16.php',
-        ///
-        {
-            UID: UID,
-        })
-}
-// 删除 管理员
-function remove_sys_admin() {
-    var UID = document.getElementById("UID2").value;
-    httpPost( //
-        'a1_remove_sys_admin.php',
-        // 'test16.php',
-        ///
-        {
-            UID: UID,
-        })
-}
-// 修改 分组 人员权限
-function fix_group() {
-    var txt = document.getElementById("R1").innerHTML;
-    var arr = JSON.parse(txt);
-    // var arr = {
-    //     46: ["甲方巡查", "管理员"]
-    // }
-    httpPost( //
-        'a5_fix_group.php',
-        // 'test16.php',
-        ///
-        {
-            ARR: JSON.stringify(arr),
-        })
-}
-// 发布 work
-function new_work() {
-    var WT = document.getElementById("WT1").value;
-    var arr = JSON.parse(WT);
-    // var arr = ["600001", "600002"]
-    httpPost( //
-        'a9_new_work.php',
-        // 'test16.php',
-        ///
-        {
-            WT: JSON.stringify(arr),
-        })
-}
-// 发布 work
-function fix_WT() {
-    var WID = document.getElementById("WID3").value;
-    var WT = document.getElementById("WT2").value;
-    var arr = JSON.parse(WT);
-    // var arr = ["600001", "600002"]
-    httpPost( //
-        'a9_fix_wrok_wt.php',
-        // 'test16.php',
-        ///
-        {
-            WID: WID,
-            ARR: JSON.stringify(arr)
+        'tb5_rename.php', {
+            UID: a,
+            NA: b,
         })
 }
 //
