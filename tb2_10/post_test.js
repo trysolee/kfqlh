@@ -76,10 +76,41 @@ function 更新孩子数据() {
     httpPost( //
         'tb9_update.php', {})
 }
-//
+
+function 获取家长邀请码() {
+    httpPost( //
+        'tb9_login_get.php', {})
+}
+
+function 获取好友邀请码() {
+    httpPost( //
+        'tb9_add_f_get.php', {})
+}
+
+function 添加家长() {
+    var 称为 = document.getElementById("添加家长1").value;
+    var 邀请码 = document.getElementById("添加家长2").value;
+    var code = document.getElementById("添加家长33").value;
+    httpPost( //
+        'tb9_login_in_old.php', {
+            code: code,
+            j_NA: 称为,
+            invite: 邀请码,
+            cType: 'browser',
+        })
+}
+
+function 添加好友() {
+    var 邀请码 = document.getElementById("添加好友1").value;
+    httpPost( //
+        'tb9_add_f.php', {
+            id: 邀请码,
+        })
+}
+//889756
 //  http://localhost/post_test.html
 //
-//
+//288655
 //
 function httpPost(URL, PARAMS) {
     var temp = document.createElement("form");
