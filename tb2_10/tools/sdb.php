@@ -4,8 +4,8 @@ include_once 'tools/sdb_one.php';
 
 class SDB
 {
-    private static $local = true;
-    private static $ready = false;
+    private static $local = true; // 本地数据库
+    private static $ready = false; // 初始化标记
 
     private static $URL   = 'localhost';
     private static $admin = 'root';

@@ -37,7 +37,7 @@ class SYS
     ##############################
     # 调试
     #
-    public static $调试 = true;
+    public static $调试 = false;
 
     public static function if没测试_end()
     {
