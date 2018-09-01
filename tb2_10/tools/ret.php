@@ -122,7 +122,7 @@ class ret
             ];
 
             $a[] = [
-                'name' => 'user',// friend
+                'name' => 'user', // friend
 
                 'sql'  => "SELECT b.* "
                 . " FROM " . $S['friend'] . ' as a'
@@ -223,16 +223,6 @@ class ret
         }
         // 关闭 mySQL
         SDB::_END();
-
-        // 返回 登陆数据
-        if ($this->is登录连接) {
-            // if (SYS::is超级管理员()) {
-            //     $this->setOPT('supAdmin', 'true');
-            // }
-            // if (SYS::is系统管理员()) {
-            //     $this->setOPT('Admin', 'true');
-            // }
-        }
 
         //
         $Ret = [

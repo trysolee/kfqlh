@@ -258,7 +258,7 @@ class cla_user extends sdb_one
             $S = &SYS::$DBNL;
 
             SDB::exec('delete from ' . $S['friend']
-                . ' where UID = ' . $this->UID()
+                . ' where UID = ' . $this->getUID()
             );
         }
         //
