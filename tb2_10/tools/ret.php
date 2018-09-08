@@ -8,11 +8,80 @@ include_once "tools/sys.php";
 class ret
 {
 
-    private static $URL   = 'localhost';
-    private static $admin = 'root';
-    private static $pw    = 'root';
-
-    private static $table = 'kfqlh';
+    private static $BUFs = [
+        // --------------
+        '家庭_重置' => [
+            'name' => 'family',
+            'sql'  => function ($db, $se) {
+                // $se = $_SESSION
+                return 'SELECT *'
+                    . ' FROM  ' . $db['family']
+                    . ' WHERE JID = ' . $se['JID'];
+            },
+            'type' => '重置', //更新 or 重置
+            'rows' => 0, // 响应行数 , 每次select后更新
+        ],
+        // --------------
+        '成员_重置' => [
+            'name' => 'user',
+            'sql'  => function ($db, $se) {
+                // $se = $_SESSION
+                return 'SELECT *'
+                    . ' FROM  ' . $db['user']
+                    . ' WHERE JID = ' . $se['JID'];
+            },
+            'type' => '重置', //更新 or 重置
+            'rows' => 0, // 响应行数 , 每次select 更新
+        ],
+        // --------------
+        // <好友_重置> 必须和 <成员_重置> 同时使用
+        // 因为 他们的<BUF.标记>都为'user'
+        //
+        // 因为他们'同时使用' ,
+        // 所以<好友_重置.type>可以为'更新'
+        //
+        '好友_重置' => [
+            'name' => 'user',
+            'sql'  => function ($db, $se) {
+                // $se = $_SESSION
+                return 'SELECT b.* '
+                    . ' FROM ' . $db['friend'] . ' as a'
+                    . ' , ' . $db['user'] . ' as b'
+                    . ' WHERE a.JID = ' . $se['JID']
+                    . ' AND a.UID = b.UID';
+            },
+            'type' => '更新', //更新 or 重置
+            'rows' => 0, // 响应行数 , 每次select 更新
+        ],
+        // --------------
+        '成员_更新' => [
+            'name' => 'user',
+            'sql'  => function ($db, $se) {
+                // $se = $_SESSION
+                return 'SELECT *'
+                    . ' FROM  ' . $db['user']
+                    . ' WHERE JID = ' . $se['JID']
+                    . ' AND FT > "' . $se['LT'] . '"';
+            },
+            'type' => '更新', //更新 or 重置
+            'rows' => 0, // 响应行数 , 每次select 更新
+        ],
+        // --------------
+        '好友_更新' => [
+            'name' => 'user',
+            'sql'  => function ($db, $se) {
+                // $se = $_SESSION
+                return 'SELECT b.* '
+                    . ' FROM ' . $db['friend'] . ' as a'
+                    . ' , ' . $db['user'] . ' as b'
+                    . ' WHERE a.JID = ' . $se['JID']
+                    . ' AND a.UID = b.UID'
+                    . ' AND b.FT > "' . $se['LT'] . '"';
+            },
+            'type' => '更新', //更新 or 重置
+            'rows' => 0, // 响应行数 , 每次select 更新
+        ],
+    ];
 
     private $STEP = [];
     private $DAT  = [];
@@ -27,7 +96,7 @@ class ret
     #
     private $不明错误 = false;
 
-    public function ret()
+    function ret()
     {
         // $this->RET['DAT'] = $this->DAT;
         // $this->RET['OPT'] = $this->OPT;
@@ -36,36 +105,36 @@ class ret
     ################################
     #  客户端 跳转到指定的<page>
     #
-    public function toPage($p)
+    function toPage($p)
     {
         $this->setOPT('toPage', $p);
     }
 
-    public function 返回后续($n) // val
+    function 返回后续($n) // val
 
     {
         $this->addOPT('call', $n);
     }
 
-    public function 清空指定BUF($n)
+    function 清空指定BUF($n)
     {
         $this->addOPT('freeBUF', $n);
     }
 
     private $is登录连接 = false;
-    public function 登录返回()
+    function 登录返回()
     {
         $this->is登录连接 = true;
     }
 
     private $SQLs = [];
 
-    public function add_SQL($sql)
+    function add_SQL($sql)
     {
         $this->SQLs[] = $sql;
     }
 
-    private function SQL()
+    function SQL()
     {
 
         $UID = $_SESSION["UID"];
@@ -137,7 +206,7 @@ class ret
     }
 
     // 判断 两个 Array 有没有重合的元素
-    private function exists($a, $b)
+    function exists($a, $b)
     {
         if (count(array_intersect($a, $b)) > 0) {
             return true;
@@ -145,7 +214,7 @@ class ret
         return false;
     }
 
-    private function select($name, $sql)
+    function select($name, $sql)
     {
 
         // 查询数据到数组中
@@ -177,7 +246,7 @@ class ret
 
     }
 
-    public function getDAT()
+    function getDAT()
     {
         // 设置返回json格式数据
         // header('content-type:application/json;charset=utf8');
@@ -194,7 +263,7 @@ class ret
         }
     }
 
-    public function addOPT($name, $val)
+    function addOPT($name, $val)
     {
         if (array_key_exists($name, $this->OPT)) {
             $this->OPT[$name][] = $val;
@@ -204,12 +273,12 @@ class ret
 
     }
 
-    public function setOPT($name, $val)
+    function setOPT($name, $val)
     {
         $this->OPT[$name] = $val;
     }
 
-    public function toStr_end()
+    function toStr_end()
     {
 
         SDB::bSet();
@@ -241,7 +310,7 @@ class ret
         exit();
     }
 
-    public function 还没注册_end()
+    function 还没注册_end()
     {
         $this->ERR = true;
 
@@ -258,7 +327,7 @@ class ret
     # 一般不可能再出现错误 ,
     # 所以 , 属于 '不明错误'
     #
-    public function 参数不全_end()
+    function 参数不全_end()
     {
         $this->ERR = true;
 
@@ -277,7 +346,7 @@ class ret
     #
     # 有可能 不是 超级管理员 或者 系统管理员
     #
-    public function 不是管理员_end()
+    function 不是管理员_end()
     {
         $this->ERR = true;
 
@@ -290,7 +359,7 @@ class ret
     ################################
     # 微信 code 解析失败
     #
-    public function codeERR_end()
+    function codeERR_end()
     {
         // 就是 code 无法转换成 openid
         $this->ERR = true;
@@ -304,7 +373,7 @@ class ret
     ################################
     # 数据库 id select 无效
     #
-    public function ID无效_end($表名)
+    function ID无效_end($表名)
     {
         $this->ERR = true;
 
@@ -317,7 +386,7 @@ class ret
     ################################
     # 在 返回数据里面 加入 '邀请码' 信息
     #
-    public function 返回邀请码($INID)
+    function 返回邀请码($INID)
     {
         $this->setOPT('INID', $INID);
     }
@@ -325,7 +394,7 @@ class ret
     ################################
     #  返回 session_id
     #
-    public function 返回session_id()
+    function 返回session_id()
     {
         $this->setOPT('_SID', session_id());
     }
@@ -333,7 +402,7 @@ class ret
     ################################
     #
     #
-    public function 错误终止_end($TXT)
+    function 错误终止_end($TXT)
     {
         $this->ERR = true;
 
@@ -343,7 +412,7 @@ class ret
         $this->toStr_end();
     }
 
-    public function 不在项目_end()
+    function 不在项目_end()
     {
         $this->ERR = true;
 

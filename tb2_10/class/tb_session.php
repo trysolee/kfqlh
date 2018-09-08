@@ -50,6 +50,7 @@ class Session
             #
             $_SESSION["is管理员"] = $user->is管理员();
             $_SESSION["家庭ID"]    = $user->家庭ID();
+            $_SESSION["JID"]    = $user->家庭ID();
 
         } else {
             $ret->还没注册();
