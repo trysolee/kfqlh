@@ -49,17 +49,7 @@ class cla_openid extends sdb_one
     public static function getByCode_end($code)
     {
         if (SYS::$调试) {
-
             return cla_openid::getByOpenid($code);
-
-            // if ($code == 'user') {
-            //     return cla_openid::getByOpenid(SYS::$userOpenID);
-            // }
-
-            // if ($code == 'admin') {
-            //     return cla_openid::getByOpenid(SYS::$adminOpenID);
-            // }
-
         }
 
         openID::get($code);

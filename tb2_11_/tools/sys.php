@@ -9,6 +9,18 @@ include_once "tools/val.php";
 class SYS
 {
 
+    ##############################
+    # 调试
+    #
+    public static $调试 = false;
+    //
+    // public static $openid不解析 = true;
+    public static $openid不解析 = false;
+    //
+    // public static $打开KK = true;
+    public static $打开KK = false;
+    ##############################
+    //
     public static $DBNL = [
         'val'    => 'tb2_val',
         'openid' => 'openid',
@@ -28,16 +40,13 @@ class SYS
         'val'        => 'tools/val.php',
         'session'    => 'class/tb_session.php',
         'input'      => 'tools/input.php',
-        'invite'      => 'class/cla_invite.php',
+        'invite'     => 'class/cla_invite.php',
 
         'user'       => 'class/tb_user.php',
         '家庭'         => 'class/cla_family.php',
     ];
 
-    ##############################
-    # 调试
-    #
-    public static $调试 = false;
+    public static $无session_OK = false;
 
     public static function if没测试_end()
     {
@@ -51,36 +60,35 @@ class SYS
 
     public static function KK($n, $v)
     {
-        if (!$_SESSION['showKK']) {
+        if (!SYS::$打开KK) {
             return;
         }
 
-        if (SYS::$调试) {
-            echo "[ $n ]";
+        echo "[ $n ]";
 
-            if ($v == ' ') {
+        if ($v == ' ') {
 
-            } elseif (is_array($v)) {
-                echo ('::<br/>');
-                print_r(json_encode($v, JSON_UNESCAPED_UNICODE));
-                //
-                //
-                // print_r($v);
-                // echo (' ]');
+        } elseif (is_array($v)) {
+            echo ('::<br/>');
+            print_r(json_encode($v, JSON_UNESCAPED_UNICODE));
+            //
+            //
+            // print_r($v);
+            // echo (' ]');
 
-            } elseif (is_null($v)) {
+        } elseif (is_null($v)) {
 
-                echo "[ isNull ]";
+            echo "[ isNull ]";
 
-            } else {
+        } else {
 
-                echo ('[ ');
-                print_r($v);
-                echo (' ]');
-            }
-
-            echo "<br/>";
+            echo ('[ ');
+            print_r($v);
+            echo (' ]');
         }
+
+        echo "<br/>";
+
     }
 
     ##############################

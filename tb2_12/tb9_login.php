@@ -1,6 +1,6 @@
 <?php
-
-// date_default_timezone_set("PRC");
+include_once 'tools/sys.php';
+SYS::$无session_OK = true;
 
 # 通过微信登录
 #
@@ -11,13 +11,17 @@
 # 3 . code 无效
 #
 
-include_once "tools/sys.php";
-// SYS::$无session_OK = true;
+include_once SYS::$filePath['input'];
 
 include_once SYS::$filePath['openid'];
+
 include_once SYS::$filePath['session'];
 
-SYS::参数检查_end(['code']);
+include_once SYS::$filePath['user'];
+
+INPUT::参数检查_end([
+    ['code', 'code', true],
+]);
 
 #####################################
 # 获取 openid
@@ -30,12 +34,15 @@ if ($openCla->还没注册()) {
     $RET->还没注册_end();
 }
 
-$u = $openCla->getUser();
-Session::set($u, $openCla->getOpenID());
+$u = cla_user::getByID($openCla->getUID());
+Session::set($u, $openCla);
 
 ###############################
 # 结束返回
 #
-$RET->返回后续('登录OK');
-$RET->登录返回();
+// 在  Session::set() 里面执行
+//
+// $RET->setOPT('myJID', $user->家庭ID());
+// $RET->toPage('首页');
+// $RET->登录返回();
 $RET->toStr_end();

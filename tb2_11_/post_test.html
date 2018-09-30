@@ -1,0 +1,256 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+            <title>
+                Post test
+            </title>
+        </meta>
+        <script src="post_test.js">
+        </script>
+    </head>
+    <body>
+        <p>
+            <button onclick="test1()" type="button">
+                小测试1
+            </button>
+        </p>
+        <p>
+            <button onclick="cls()" type="button">
+                删除所以数据
+            </button>
+        </p>
+        <p>
+            <button onclick="ZC()" type="button">
+                注册
+            </button>
+            openid :
+            <input id="ZC1" type="text" value="admin">
+            </input>
+            孩子昵称 :
+            <input id="ZC2" type="text" value="炸弹">
+            </input>
+            家长称为 :
+            <input id="ZC3" type="text" value="爸爸">
+            </input>
+            年级 :
+            <input id="ZC4" type="text" value="四年级">
+            </input>
+        </p>
+        <p>
+            <button onclick="DL()" type="button">
+                登录
+            </button>
+            openid :
+            <input id="DL1" type="text" value="admin">
+            </input>
+        </p>
+        <p>
+            <button onclick="sys()" type="button">
+                == 当前状态1 ===
+            </button>
+        </p>
+        <p>
+            --------------------
+        </p>
+        <p>
+            <button onclick="add_c()" type="button">
+                添加 孩子
+            </button>
+            孩子昵称 :
+            <input id="add_c1" type="text" value="玉自寒">
+            </input>
+        </p>
+        <p>
+            <button onclick="rename()" type="button">
+                改名
+            </button>
+            UID :
+            <input id="rename1" type="text" >
+            </input>
+            新昵称 :
+            <input id="rename2" type="text" value="碧儿">
+            </input>
+        </p>
+        <p>
+            --------------------
+        </p>
+        <p>
+            <button onclick="更新孩子数据()" type="button">
+                更新孩子数据
+            </button>
+        </p>
+        <p>
+            <button onclick="获取家长邀请码()" type="button">
+                获取家长邀请码
+            </button>
+        </p>
+        <p>
+            <button onclick="获取好友邀请码()" type="button">
+                获取好友邀请码
+            </button>
+        </p>
+        <p>
+            <button onclick="添加家长()" type="button">
+                添加家长
+            </button>
+            openid :
+            <input id="添加家长33" type="text" value="user23">
+            </input>
+            家长称为 :
+            <input id="添加家长1" type="text" value="爷爷">
+            </input>
+            邀请码 :
+            <input id="添加家长2" type="text" value="">
+            </input>
+        </p>
+        <p>
+            <button onclick="添加好友()" type="button">
+                添加好友
+            </button>
+            邀请码 :
+            <input id="添加好友1" type="text" value="">
+            </input>
+        </p>
+        <p>
+            <button onclick="fix_group_name()" type="button">
+                修改分组的名称
+            </button>
+            (当前)项目.分组名称 :
+            <input id="JN3" type="text">
+            </input>
+        </p>
+        <p>
+            <button onclick="chg_group()" type="button">
+                更换到 项目分组
+            </button>
+            JID :
+            <input id="JID1" type="text">
+            </input>
+            分组 :
+            <input id="FZ1" type="text" value="甲方">
+            </input>
+        </p>
+        <p>
+            <button onclick="fix_group()" type="button">
+                修改 甲方分组 人员权限
+            </button>
+            <textarea cols="50" id="R1" rows="10">
+                {
+"46": ["甲方巡查", "管理员"]
+}
+            </textarea>
+        </p>
+        <p>
+            "监理" ["管理员", "监理巡查", "监理浏览", "监理维护"],
+        </p>
+        <p>
+            "施工" ["管理员", "施工日常", "施工处理", "施工维护"],
+        </p>
+        <p>
+            "甲方" ["管理员", "甲方巡查"],
+        </p>
+        <p>
+            --------------------
+        </p>
+        <p>
+            (当前)项目.分组
+            <button onclick="new_login_in()" type="button">
+                发出邀请
+            </button>
+        </p>
+        <p>
+            <button onclick="user_login_in()" type="button">
+                user 接收邀请
+            </button>
+            邀请号 :
+            <input id="INID1" type="text">
+            </input>
+        </p>
+        <p>
+            --------------------
+        </p>
+        <p>
+            (当前)项目.分组
+            <button onclick="new_work()" type="button">
+                发布 work
+            </button>
+            标签 :
+            <input id="WT1" type="text">
+            </input>
+        </p>
+        <p>
+            监理 ["100002", "100017"]
+        </p>
+        <p>
+            甲方 ["600001", "600002"]
+        </p>
+        <p>
+            施工 ["110", "115"]
+        </p>
+        <p>
+            修改 work 的 标签
+            <button onclick="fix_WT()" type="button">
+                修改 标签
+            </button>
+            WID :
+            <input id="WID3" type="text">
+            </input>
+            标签 :
+            <input id="WT2" type="text">
+            </input>
+        </p>
+        <p>
+            --------------------
+        </p>
+        <form action="a9_up_work.php" enctype="multipart/form-data" method="POST">
+            <input name="lo" type="hidden" value="23333"/>
+            <input name="la" type="hidden" value="25555"/>
+            <p>
+                WID :
+                <input name="WID" type="text">
+                </input>
+            </p>
+            <p>
+                Send this File :
+                <input name="file" type="file"/>
+                <input type="submit" value="Send File"/>
+            </p>
+        </form>
+        <p>
+            --------------------
+        </p>
+        <form action="a9_up_work.php" enctype="multipart/form-data" method="POST">
+            <p>
+                WID :
+                <input name="WID" type="text">
+                </input>
+            </p>
+            <p>
+                文字 :
+                <input name="TXT" type="text">
+                </input>
+            </p>
+            <input type="submit" value="发送"/>
+        </form>
+    </body>
+    <p>
+        --------------------
+    </p>
+    <form action="a9_new_work.php" enctype="multipart/form-data" method="POST">
+        <input name="lo" type="hidden" value="23333"/>
+        <input name="la" type="hidden" value="25555"/>
+        <input name="TXT" type="hidden" value="文字一起上"/>
+        <p>
+            WT :
+            <input name="WT" type="text">
+            </input>
+        </p>
+        <p>
+            Send this File :
+            <input name="file" type="file"/>
+            <input type="submit" value="图片文字一起上"/>
+        </p>
+    </form>
+</html>
