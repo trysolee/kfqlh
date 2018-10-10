@@ -169,7 +169,7 @@ abstract class sdb_one
             SYS::KK('ID无效 DB名', $this->_DB());
             SYS::KK('ID无效 ID值', $this->ID());
 
-            $GLOBALS['RET']->ID无效_end($this->_DB());
+            RET::ID无效_end($this->_DB());
         }
 
         return $o;

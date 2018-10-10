@@ -84,7 +84,7 @@ class BEGIN
 
         $分组 = '监理';
 
-        $u = cla_user::newOne(
+        $u = cla_uh::newOne(
             $name
         );
         $UID = $u->getUID();

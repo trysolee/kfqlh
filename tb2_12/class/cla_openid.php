@@ -74,7 +74,7 @@ class cla_openid extends sdb_one
             return cla_openid::getByOpenid(openID::$openid);
         } else {
 
-            $GLOBALS['RET']->codeERR_end();
+            RET::codeERR_end();
             exit();
         }
     }
@@ -128,7 +128,7 @@ class cla_openid extends sdb_one
     public function getUser()
     {
         if ($this->isOK()) {
-            return cla_user::getByID($this->DAT['UID']);
+            return cla_uh::getByID($this->DAT['UID']);
         }
 
         return null;

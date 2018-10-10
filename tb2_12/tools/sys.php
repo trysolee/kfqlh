@@ -3,11 +3,14 @@
 include_once 'tools/sdb.php';
 include_once "tools/ret.php";
 include_once "tools/val.php";
+include_once "tools/keys.php";
 /**
  *
  */
 class SYS
 {
+
+    public static $本地数据版本 = 'r5';
 
     ##############################
     # 调试
@@ -24,7 +27,9 @@ class SYS
     public static $DBNL = [
         'val'    => 'tb2_val',
         'openid' => 'openid',
-        'user'   => 'tb2_user',
+        'user--'   => 'tb2_user',
+        'u_c'   => 'tb3_user_c',
+        'u_h'   => 'tb3_user_h',
         'friend' => 'tb2_friend',
         'family' => 'tb2_family',
         'invite' => 'tb2_invite',
@@ -34,7 +39,7 @@ class SYS
 
         'sdb'        => 'tools/sdb.php',
         'sdb_one'    => 'tools/sdb_one.php',
-        'get_openid' => 'class/get_openid.php',
+        'get_openid' => 'tools/get_openid.php',
         'openid'     => 'class/cla_openid.php',
         'begin'      => 'tools/begin.php',
         'val'        => 'tools/val.php',
@@ -42,8 +47,12 @@ class SYS
         'input'      => 'tools/input.php',
         'invite'     => 'class/cla_invite.php',
 
-        'user'       => 'class/tb_user.php',
+        'user---'       => 'class/tb_user.php',
+        'u_c'       => 'class/cla_uc.php',
+        'u_h'       => 'class/cla_uh.php',
         '家庭'         => 'class/cla_family.php',
+
+        'up_each'    => 'up_db/up_each.php',
     ];
 
     public static $无session_OK = false;
@@ -54,8 +63,8 @@ class SYS
             return;
         }
         //
-        $GLOBALS['RET']->toPage('首页');
-        $GLOBALS['RET']->错误终止_end('没在测试');
+        RET::toPage('首页');
+        RET::错误终止_end('没在测试');
     }
 
     public static function KK($n, $v)
@@ -167,7 +176,7 @@ class SYS
     public static function is超级管理员_end()
     {
         if (!SYS::is超级管理员()) {
-            $GLOBALS['RET']->不是管理员_end();
+            RET::不是管理员_end();
             exit();
         }
     }
@@ -184,7 +193,7 @@ class SYS
     public static function is系统管理员_end()
     {
         if (!SYS::is系统管理员()) {
-            $GLOBALS['RET']->不是管理员_end();
+            RET::不是管理员_end();
             exit();
         }
     }
@@ -237,7 +246,7 @@ class SYS
     {
         foreach ($arr as $value) {
             if (empty($_POST[$value])) {
-                $GLOBALS['RET']->参数不全_end();
+                RET::参数不全_end();
                 exit();
             }
         }

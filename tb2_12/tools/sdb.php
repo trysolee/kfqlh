@@ -69,6 +69,7 @@ class SDB
     {
         if (SDB::$ready) {
             mysql_close(SDB::$link);
+            SDB::$ready = false;
         }
     }
 
@@ -113,7 +114,7 @@ class SDB
             }
         } else {
 
-            $GLOBALS['RET']->错误终止_end('SDB 1 ' . $sql);
+            RET::错误终止_end('SDB 1 ' . $sql);
 
         }
 
@@ -144,12 +145,37 @@ class SDB
 
         } else {
 
-            $GLOBALS['RET']->错误终止_end('SDB 2 ' . $sql);
+            RET::错误终止_end('SDB 2 ' . $sql);
 
         }
 
         SDB::$notFind = true;
 
+    }
+
+    //
+    public static function SQL_each($sql, $each)
+    {
+
+        if (!SDB::$ready) {
+            SDB::bSet();
+        }
+
+        $result = mysql_query($sql);
+        if ($result) {
+            while ($row = mysql_fetch_assoc($result)) {
+
+                if (array_key_exists('JSON', $row)) {
+                    $row['JSON'] = json_decode($row['JSON'], true);
+                }
+                $each->each($row);
+            }
+
+        } else {
+
+            RET::错误终止_end('SDB 3 ' . $sql);
+
+        }
     }
 
     #=====================================
@@ -265,3 +291,5 @@ class SDB
     }
 
 }
+
+SDB::bSet();

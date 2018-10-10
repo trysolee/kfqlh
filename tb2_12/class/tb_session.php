@@ -16,18 +16,18 @@ class Session
         }
 
         if (empty($_SESSION["UID"])) {
-            $GLOBALS['RET']->返回后续('主入口');
-            $GLOBALS['RET']->toStr_No_session_end();
-            // $GLOBALS['RET']->错误终止_end('还没登录');
+            RET::返回后续('主入口');
+            RET::toStr_onlyOPT_end();
+            // RET::错误终止_end('还没登录');
         }
     }
 
     public static function set($user, $openid)
     {
-        $ret = $GLOBALS['RET'];
-        $ret->setOPT('myJID', $user->家庭ID());
-        $ret->toPage('首页');
-        $ret->登录返回();
+        // $ret = $GLOBALS['RET'];
+        RET::setOPT('myJID', $user->家庭ID());
+        RET::toPage('首页');
+        // RET::登录返回();
 
         //
 
@@ -39,7 +39,7 @@ class Session
 
         // 返回 _SIDd
         // 小程序 不自动处理session
-        $ret->返回session_id();
+        RET::返回session_id();
 
         if ($user->isOK()) {
             #
@@ -59,7 +59,7 @@ class Session
             $_SESSION["JID"]         = $user->家庭ID();
 
         } else {
-            $ret->还没注册();
+            RET::还没注册();
 
         }
 

@@ -14,7 +14,8 @@ include_once SYS::$filePath['input'];
 include_once SYS::$filePath['openid'];
 include_once SYS::$filePath['session'];
 
-include_once SYS::$filePath['user'];
+include_once SYS::$filePath['u_h'];
+include_once SYS::$filePath['u_c'];
 include_once SYS::$filePath['invite'];
 // include_once SYS::$filePath['家庭'];
 
@@ -47,7 +48,7 @@ if ($openCla->还没注册()) {
     //
     //
 
-    $user = cla_user::newOne($j_NA, $邀请->getJID(), '家长');
+    $user = cla_uh::newOne($j_NA, $邀请->getJID(), '家长');
 
     cla_openid::newOne($openCla->getOpenID() //
         , $user->getUID());
@@ -56,17 +57,20 @@ if ($openCla->还没注册()) {
 
     // 在  Session::set() 里面执行
     // 
-    // $RET->setOPT('myJID', $user->家庭ID());
-    // $RET->toPage('首页');
-    // $RET->登录返回();
+    // RET::setOPT('myJID', $user->家庭ID());
+    // RET::toPage('首页');
+    // RET::登录返回();
 
 } else {
 
-    $GLOBALS['RET']->错误终止_end('需要先注销账户');
+    RET::错误终止_end('需要先注销账户');
 }
 
 ###############################
 # 结束返回
 #
-
-$RET->toStr_end();
+RET::ret_buf_min('家庭_重置' , 1);
+RET::ret_buf_min('自己_重置' , 1);
+RET::ret_buf_min('家长_重置' , 1);
+RET::ret_buf_min('孩子_重置' , 1);
+RET::toStr_end();

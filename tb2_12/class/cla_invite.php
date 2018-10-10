@@ -80,14 +80,14 @@ class cla_invite extends sdb_one
     public function is家长邀请_end()
     {
         return $this->DAT['JSON']['类型'] == '家长邀请';
-        $GLOBALS['RET']->错误终止_end('必须时家长邀请');
+        RET::错误终止_end('必须时家长邀请');
         exit();
     }
     public function is好友邀请_end()
     {
 
         return $this->DAT['JSON']['类型'] == '好友邀请';
-        $GLOBALS['RET']->错误终止_end('必须好友邀请');
+        RET::错误终止_end('必须好友邀请');
         exit();
     }
     public function getJID()

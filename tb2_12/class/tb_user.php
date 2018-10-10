@@ -55,46 +55,12 @@ class cla_user extends sdb_one
         return $o;
     }
 
-    public static function 添加好友($UID1, $UID2)
-    {
-
-    }
-
     public static function 我是管理员_end()
     {
         if (!$_SESSION["is管理员"]) {
-            $GLOBALS['RET']->错误终止_end('不是管理员');
+            RET::错误终止_end('不是管理员');
             exit();
         }
-
-    }
-
-    public static function del好友($UID)
-    {
-        //
-        // 1 . 删除<db_user>
-        // 2 . 删除<db_friend>
-        //
-
-    }
-
-    public static function del家长($UID)
-    {
-        //
-        // 1 . 删除<db_user>
-        // 2 . 删除<db_openid>
-        //
-
-    }
-
-    public static function del管理员($UID)
-    {
-        //
-        // 如果只有一个<管理员>不能<del>
-        //
-        // 1 . 删除<db_user>
-        // 2 . 删除<db_openid>
-        //
 
     }
 
@@ -120,7 +86,7 @@ class cla_user extends sdb_one
     {
         $this->fix = true;
         if (@$_SESSION['UID'] == $this->getUID()) {
-            $GLOBALS['RET']->登录返回();
+            RET::登录返回();
         }
     }
 
@@ -164,7 +130,7 @@ class cla_user extends sdb_one
     public function is同一家庭_end()
     {
         if (!$this->is同一家庭()) {
-            $GLOBALS['RET']->错误终止_end('不在同一个家庭');
+            RET::错误终止_end('不在同一个家庭');
         }
     }
 
@@ -176,7 +142,7 @@ class cla_user extends sdb_one
     public function is孩子_end()
     {
         if (!$this->is孩子()) {
-            $GLOBALS['RET']->错误终止_end('必须是 孩子');
+            RET::错误终止_end('必须是 孩子');
         }
     }
     public function is家长()
@@ -191,7 +157,7 @@ class cla_user extends sdb_one
     public function is家长_end()
     {
         if (!$this->is家长()) {
-            $GLOBALS['RET']->错误终止_end('必须是 家长');
+            RET::错误终止_end('必须是 家长');
         }
     }
     public function is管理员()
@@ -201,14 +167,14 @@ class cla_user extends sdb_one
     public function is管理员_end()
     {
         if (!$this->is管理员()) {
-            $GLOBALS['RET']->错误终止_end('必须是管理员');
+            RET::错误终止_end('必须是管理员');
         }
     }
 
     public function is任务中_end()
     {
         if ($this->DAT['JSON']['执行包']['类型'] == '空闲') {
-            $GLOBALS['RET']->错误终止_end('不在任务中');
+            RET::错误终止_end('不在任务中');
         }
     }
 
@@ -254,11 +220,21 @@ class cla_user extends sdb_one
 
     public function 注销()
     {
+        $S = &SYS::$DBNL;
         if ($this->is孩子()) {
-            $S = &SYS::$DBNL;
 
-            SDB::exec('delete from ' . $S['friend']
-                . ' where UID = ' . $this->getUID()
+            //
+            // 暂时停用<好友系统>
+            //
+            // SDB::exec('delete from ' . $S['friend']
+            //     . ' where UID = ' . $this->getUID()
+            // );
+
+        } else if ($this->is家长()) {
+            SDB::exec('delete from '
+                . $S['openid']
+                . ' where UID = '
+                . $this->getUID()
             );
         }
         //

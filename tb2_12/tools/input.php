@@ -93,7 +93,7 @@ class INPUT
 
             if (empty($_POST[$v[0]])) {
                 if ($v[2]) {
-                    $GLOBALS['RET']->参数不全_end();
+                    RET::参数不全_end();
                     exit();
                 }
                 continue;
@@ -114,7 +114,7 @@ class INPUT
             $b = $f[$v[1]]($_POST[$v[0]]);
             //
             if ($b['ERR']) {
-                $GLOBALS['RET']->错误终止_end($b['MSG']);
+                RET::错误终止_end($b['MSG']);
                 exit();
             }
         }

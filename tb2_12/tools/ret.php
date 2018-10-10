@@ -6,25 +6,66 @@ $RET_BUFs = [
     // --------------
     '家庭_重置' => [
         'name' => 'family',
-        'sql'  => function ($db, $se) {
-            // $se = $_SESSION
+        'sql'  => function ($db) {
             return 'SELECT *'
-                . ' FROM  ' . $db['family']
-                . ' WHERE JID = ' . $se['JID'];
+                . ' FROM ' . $db['family']
+                . ' WHERE JID = ' . $_SESSION['JID'];
+        },
+        'type' => '重置', //更新 or 重置
+        'rows' => 0, // 响应行数 , 每次select后更新
+    ],
+    '自己_重置' => [
+        'name' => 'user_my',
+        'sql'  => function ($db) {
+            return 'SELECT *'
+                . ' FROM ' . $db['u_h']
+                . ' WHERE UID = ' . $_SESSION['UID'];
         },
         'type' => '重置', //更新 or 重置
         'rows' => 0, // 响应行数 , 每次select后更新
     ],
     // --------------
-    '成员_重置' => [
-        'name' => 'user',
-        'sql'  => function ($db, $se) {
-            // $se = $_SESSION
+    '孩子_重置' => [
+        'name' => 'uc',
+        'sql'  => function ($db) {
             return 'SELECT *'
-                . ' FROM  ' . $db['user']
-                . ' WHERE JID = ' . $se['JID'];
+                . ' FROM  ' . $db['u_c']
+                . ' WHERE JID = ' . $_SESSION['JID'];
         },
         'type' => '重置', //更新 or 重置
+        'rows' => 0, // 响应行数 , 每次select 更新
+    ],
+    '孩子_更新' => [
+        'name' => 'uc',
+        'sql'  => function ($db) {
+            return 'SELECT *'
+                . ' FROM  ' . $db['u_c']
+                . ' WHERE JID = ' . $_SESSION['JID']
+                . ' AND FT > "' . $_SESSION['LT'] . '"';
+        },
+        'type' => '更新', //更新 or 重置
+        'rows' => 0, // 响应行数 , 每次select 更新
+    ],
+    // --------------
+    '家长_重置' => [
+        'name' => 'uh',
+        'sql'  => function ($db) {
+            return 'SELECT *'
+                . ' FROM  ' . $db['u_h']
+                . ' WHERE JID = ' . $_SESSION['JID'];
+        },
+        'type' => '重置', //更新 or 重置
+        'rows' => 0, // 响应行数 , 每次select 更新
+    ],
+    '家长_更新' => [
+        'name' => 'uh',
+        'sql'  => function ($db) {
+            return 'SELECT *'
+                . ' FROM  ' . $db['u_h']
+                . ' WHERE JID = ' . $_SESSION['JID']
+                . ' AND FT > "' . $_SESSION['LT'] . '"';
+        },
+        'type' => '更新', //更新 or 重置
         'rows' => 0, // 响应行数 , 每次select 更新
     ],
     // --------------
@@ -36,46 +77,26 @@ $RET_BUFs = [
     //
     '好友_重置' => [
         'name' => 'user',
-        'sql'  => function ($db, $se) {
-            // $se = $_SESSION
+        'sql'  => function ($db) {
             return 'SELECT b.* '
                 . ' FROM ' . $db['friend'] . ' as a'
-                . ' , ' . $db['user'] . ' as b'
-                . ' WHERE a.JID = ' . $se['JID']
+                . ' , ' . $db['u_c'] . ' as b'
+                . ' WHERE a.JID = ' . $_SESSION['JID']
                 . ' AND a.UID = b.UID';
         },
-        'test' => function ($s) {
-            // $se = $_SESSION
-            return 'SELECT b.* '
-                . $s;
-        },
         'type' => '更新', //更新 or 重置
         'rows' => 0, // 响应行数 , 每次select 更新
     ],
     // --------------
-    '成员_更新' => [
+    '好友_更新' => [ // 临时暂停
         'name' => 'user',
-        'sql'  => function ($db, $se) {
-            // $se = $_SESSION
-            return 'SELECT *'
-                . ' FROM  ' . $db['user']
-                . ' WHERE JID = ' . $se['JID']
-                . ' AND FT > "' . $se['LT'] . '"';
-        },
-        'type' => '更新', //更新 or 重置
-        'rows' => 0, // 响应行数 , 每次select 更新
-    ],
-    // --------------
-    '好友_更新' => [
-        'name' => 'user',
-        'sql'  => function ($db, $se) {
-            // $se = $_SESSION
+        'sql'  => function ($db) {
             return 'SELECT b.* '
                 . ' FROM ' . $db['friend'] . ' as a'
-                . ' , ' . $db['user'] . ' as b'
-                . ' WHERE a.JID = ' . $se['JID']
+                . ' , ' . $db['u_c'] . ' as b'
+                . ' WHERE a.JID = ' . $_SESSION['JID']
                 . ' AND a.UID = b.UID'
-                . ' AND b.FT > "' . $se['LT'] . '"';
+                . ' AND b.FT > "' . $_SESSION['LT'] . '"';
         },
         'type' => '更新', //更新 or 重置
         'rows' => 0, // 响应行数 , 每次select 更新
@@ -85,135 +106,45 @@ $RET_BUFs = [
 /**
  *
  */
-class ret
+class RET
 {
 
     public static $RET_BUFs;
 
-    private $STEP = [];
-    private $DAT  = [];
-    private $OPT  = [];
+    private static $DAT = [];
+    private static $OPT = [];
 
     // true : 发生错误
     // false : 正常
-    private $ERR = false;
-
-    #####################################
-    # 如果 有不明错误 , 只返回 $OPT
-    #
-    private $不明错误 = false;
-
-    public function ret()
-    {
-        // $this->RET['DAT'] = $this->DAT;
-        // $this->RET['OPT'] = $this->OPT;
-    }
+    private static $ERR = false;
 
     ################################
     #  客户端 跳转到指定的<page>
     #
-    public function toPage($p)
+    public static function toPage($p)
     {
-        $this->setOPT('toPage', $p);
+        RET::setOPT('toPage', $p);
     }
 
-    public function 返回后续($n) // val
+    public static function 返回后续($n) // val
 
     {
-        $this->addOPT('call', $n);
+        RET::addOPT('call', $n);
     }
 
-    public function 清空指定BUF($n)
+    public static function 清空指定BUF($n)
     {
-        $this->addOPT('freeBUF', $n);
+        RET::addOPT('freeBUF', $n);
     }
 
-    private $is登录连接 = false;
-    public function 登录返回()
-    {
-        $this->is登录连接 = true;
-    }
-
-    private $SQLs = [];
-
-    public function add_SQL($sql)
-    {
-        $this->SQLs[] = $sql;
-    }
-
-    public function SQL()
-    {
-
-        $UID = $_SESSION["UID"];
-        $LT  = $_SESSION["LT"];
-
-        $JID = $_SESSION["家庭ID"];
-        $S   = &SYS::$DBNL;
-
-        $a = $this->SQLs;
-
-        if ($this->is登录连接) {
-            $a[] = [
-                'name' => 'family',
-
-                'sql'  => "SELECT *"
-                . " FROM  " . $S['family']
-                . " WHERE JID = " . $JID,
-            ];
-            $a[] = [
-                'name' => 'user_my',
-
-                'sql'  => "SELECT *"
-                . " FROM  " . $S['user']
-                . " WHERE UID = " . $UID,
-            ];
-
-            $a[] = [
-                'name' => 'user',
-
-                'sql'  => "SELECT *"
-                . " FROM  " . $S['user']
-                . " WHERE JID = " . $JID,
-            ];
-
-            $a[] = [
-                'name' => 'user', // friend
-
-                'sql'  => "SELECT b.* "
-                . " FROM " . $S['friend'] . ' as a'
-                . ' , ' . $S['user'] . ' as b'
-                . " WHERE a.JID = " . $JID
-                . " AND a.UID = b.UID",
-            ];
-        } else {
-
-            // 非登陆连接 , ( 平常最频繁的调用 )
-            $a[] = [
-                'name' => 'user',
-
-                'sql'  => "SELECT *"
-                . " FROM  " . $S['user']
-                . " WHERE JID = " . $JID
-                . " AND FT > '" . $LT . "'",
-            ];
-
-            $a[] = [
-                'name' => 'user', // friend
-
-                'sql'  => "SELECT b.* "
-                . " FROM " . $S['friend'] . ' as a'
-                . ' , ' . $S['user'] . ' as b'
-                . " WHERE a.JID = " . $JID
-                . " AND a.UID = b.UID"
-                . " AND b.FT > '" . $LT . "'",
-            ];
-        }
-
-        return $a;
-    }
+    // private $is登录连接 = false;
+    // public static function 登录返回()
+    // {
+    //     RET::is登录连接 = true;
+    // }
 
     // 判断 两个 Array 有没有重合的元素
-    public function exists($a, $b)
+    public static function exists($a, $b)
     {
         if (count(array_intersect($a, $b)) > 0) {
             return true;
@@ -221,69 +152,113 @@ class ret
         return false;
     }
 
-    public function select($name, $sql)
+    private static $RET_ARR = [];
+
+    public static function ret_buf($name)
+    {
+        RET::ret_buf_min($name, 0);
+    }
+
+    public static function ret_buf_min($name, $n)
+    {
+        if (array_key_exists($name, RET::$RET_ARR)) {
+            if (RET::$RET_ARR[$name] < $n) {
+                RET::$RET_ARR[$name] = $n;
+            }
+        } else {
+            RET::$RET_ARR[$name] = $n;
+        }
+    }
+
+    public static function ret_buf_go()
     {
 
-        // 查询数据到数组中
-        // $result = mysql_query("select UID ,name ,phone  from user ");
-        $result = mysql_query($sql);
-        if (!$result) {
-            SYS::KK('RET select SQL return Null', $sql);
+        if (RET::$ERR) {
+            return;
         }
+        $db = &SYS::$DBNL;
+        foreach (RET::$RET_ARR as $key => $value) {
+            $r = &RET::$RET_BUFs[$key];
+            // SYS::KK('getName', $r);
 
-        $results = array();
-        while ($row = mysql_fetch_assoc($result)) {
+            $f = &$r['sql'];
 
-            if (array_key_exists('JSON', $row)) {
-                $row['JSON'] = json_decode($row['JSON'], true);
+            $result = mysql_query($f($db));
+            if ($result) {
+
+                $len = mysql_num_rows($result);
+                if ($len < $value) {
+                    mysql_free_result($result);
+                    RET::错误终止_end('响应行数不足.' . $key);
+                }
+
+                $results = array();
+                while ($row = mysql_fetch_assoc($result)) {
+
+                    if (array_key_exists('JSON', $row)) {
+                        $row['JSON'] = json_decode($row['JSON'], true);
+                    }
+
+                    $results[] = $row;
+                }
+                RET::$DAT[] = [
+                    'name' => $r['name'],
+                    'arr'  => $results,
+                ];
+
+                if ($r['type'] == '重置') {
+                    RET::清空指定BUF($r['name']);
+                }
+
+            } else {
+                if ($value > 0) {
+                    mysql_free_result($result);
+                    RET::错误终止_end('响应行数不足.' . $key);
+                }
+
             }
-
-            // $row['JSON'] = json_decode($row['JSON'], true);
-
-            $results[] = $row;
         }
-
-        $this->DAT[] = [
-            'name' => $name,
-            'arr'  => $results,
-        ];
 
         // 关闭连接
-        mysql_free_result($result);
-
-    }
-
-    public function getDAT()
-    {
-
-        foreach ($this->SQL() as $value) {
-            $this->select($value['name'], $value['sql']);
+        if (!empty($result)) {
+            mysql_free_result($result);
         }
+
     }
 
-    public function addOPT($name, $val)
+    // public function getDAT()
+    // {
+
+    //     foreach ($this->SQL() as $value) {
+    //         $this->select($value['name'], $value['sql']);
+    //     }
+    // }
+
+    public static function addOPT($name, $val)
     {
-        if (array_key_exists($name, $this->OPT)) {
-            $this->OPT[$name][] = $val;
+        if (array_key_exists($name, RET::$OPT)) {
+            RET::$OPT[$name][] = $val;
         } else {
-            $this->OPT[$name] = [$val];
+            RET::$OPT[$name] = [$val];
         }
 
     }
 
-    public function setOPT($name, $val)
+    public static function setOPT($name, $val)
     {
-        $this->OPT[$name] = $val;
+        RET::$OPT[$name] = $val;
     }
 
-    public function toStr_No_session_end()
+    public static function toStr_onlyOPT_end()
     {
 
         //
         $Ret = [
-            'OPT' => $this->OPT,
+            'OPT' => RET::$OPT,
             'DAT' => [],
         ];
+        // 关闭 mySQL
+        SDB::_END();
 
         // 将数组转成json格式
         echo json_encode($Ret, JSON_UNESCAPED_UNICODE);
@@ -291,29 +266,25 @@ class ret
         exit();
     }
 
-    public function toStr_end()
+    public static function toStr_end()
     {
-
-        SDB::bSet();
 
         ###################
         # 如果 没有错误 , save
         #
-        if (!$this->ERR) {
+        if (!RET::$ERR) {
             SYS::BUF_save();
-            $this->getDAT();
+            RET::ret_buf_go();
+
+            // 
+            RET::setOPT('CS版本', SYS::$本地数据版本);
         }
         // 关闭 mySQL
         SDB::_END();
-        // $f  = ret::$RET_BUFs['好友_重置']['test'];
-        // $s=  $f('aab'); // TODO 重要标记
         //
         $Ret = [
-            'OPT'  => $this->OPT,
-            'DAT'  => $this->DAT,
-            // 'test' => $f('azx'),
-            // 'test' => $RET_BUFs['好友_重置']['test']('azx'),
-            // 'test' => ret::$RET_BUFs['好友_重置']['name'],
+            'OPT' => RET::$OPT,
+            'DAT' => RET::$DAT,
         ];
 
         #=============================
@@ -327,15 +298,15 @@ class ret
         exit();
     }
 
-    public function 还没注册_end()
+    public static function 还没注册_end()
     {
-        $this->ERR = true;
+        RET::$ERR = true;
 
-        $this->setOPT('ERR', '90');
-        $this->setOPT('MSG', '还没注册');
+        RET::setOPT('ERR', '90');
+        RET::setOPT('MSG', '还没注册');
 
-        $this->返回后续('还没注册');
-        $this->toStr_end(); // 自带 exit()
+        RET::返回后续('还没注册');
+        RET::toStr_onlyOPT_end(); // 自带 exit()
 
     }
 
@@ -344,14 +315,14 @@ class ret
     # 一般不可能再出现错误 ,
     # 所以 , 属于 '不明错误'
     #
-    public function 参数不全_end()
+    public static function 参数不全_end()
     {
-        $this->ERR = true;
+        RET::$ERR = true;
 
-        $this->setOPT('ERR', '90');
-        $this->setOPT('MSG', '参数不全');
+        RET::setOPT('ERR', '90');
+        RET::setOPT('MSG', '参数不全');
 
-        $this->toStr_end();
+        RET::toStr_onlyOPT_end();
     }
 
     ################################
@@ -363,94 +334,96 @@ class ret
     #
     # 有可能 不是 超级管理员 或者 系统管理员
     #
-    public function 不是管理员_end()
+    public static function 不是管理员_end()
     {
-        $this->ERR = true;
+        RET::$ERR = true;
 
-        $this->setOPT('ERR', '90');
-        $this->setOPT('MSG', '权限错误');
+        RET::setOPT('ERR', '90');
+        RET::setOPT('MSG', '权限错误');
 
-        $this->toStr_end();
+        RET::toStr_onlyOPT_end();
     }
 
     ################################
     # 微信 code 解析失败
     #
-    public function codeERR_end()
+    public static function codeERR_end()
     {
         // 就是 code 无法转换成 openid
-        $this->ERR = true;
+        RET::$ERR = true;
 
-        $this->setOPT('ERR', '90');
-        $this->setOPT('MSG', '微信登录失败');
+        RET::setOPT('ERR', '90');
+        RET::setOPT('MSG', '微信登录失败');
 
-        $this->toStr_end();
+        RET::toStr_onlyOPT_end();
     }
 
     ################################
     # 数据库 id select 无效
     #
-    public function ID无效_end($表名)
+    public static function ID无效_end($表名)
     {
-        $this->ERR = true;
+        RET::$ERR = true;
 
-        $this->setOPT('ERR', '90');
-        $this->setOPT('MSG', 'ID无效');
+        RET::setOPT('ERR', '90');
+        RET::setOPT('MSG', 'ID无效');
 
-        $this->toStr_end();
+        RET::toStr_onlyOPT_end();
     }
 
     ################################
     # 在 返回数据里面 加入 '邀请码' 信息
     #
-    public function 返回邀请码($INID)
+    public static function 返回邀请码($INID)
     {
-        $this->setOPT('INID', $INID);
+        RET::setOPT('INID', $INID);
     }
 
     ################################
     #  返回 session_id
     #
-    public function 返回session_id()
+    public static function 返回session_id()
     {
-        $this->setOPT('_SID', session_id());
+        RET::setOPT('_SID', session_id());
     }
 
     ################################
     #
     #
-    public function 错误终止_end($TXT)
+    public static function 错误终止_end($TXT)
     {
-        $this->ERR = true;
+        RET::$ERR = true;
 
-        $this->setOPT('ERR', '93');
-        $this->setOPT('MSG', $TXT);
+        RET::setOPT('ERR', '93');
+        RET::setOPT('MSG', $TXT);
 
-        $this->toStr_end();
+        RET::toStr_onlyOPT_end();
     }
 
-    public function 不在项目_end()
+    public static function 不在项目_end()
     {
-        $this->ERR = true;
+        RET::$ERR = true;
 
-        $this->setOPT('ERR', '95');
-        $this->setOPT('MSG', '需要重新接收邀请');
+        RET::setOPT('ERR', '95');
+        RET::setOPT('MSG', '需要重新接收邀请');
 
-        $this->toStr_end();
+        RET::toStr_onlyOPT_end();
     }
 }
 
 // 设置返回json格式数据
-if (SYS::$调试) {
-    // header('content-type:text/html;charset=utf8');
+if (SYS::$打开KK) {
+    header('content-type:text/html;charset=utf8');
 
-    header('content-type:application/json;charset=utf8');
+    ob_end_clean();
+    ob_implicit_flush(1);
+    // header('content-type:application/json;charset=utf8');
 } else {
     header('content-type:application/json;charset=utf8');
 }
 
-ret::$RET_BUFs = $RET_BUFs;
-$RET           = $GLOBALS['RET']           = new ret();
+RET::$RET_BUFs = $RET_BUFs;
+// $RET           = $GLOBALS['RET']           = new ret();
 
 if (!empty($_POST['_SID'])) {
     session_id($_POST['_SID']);
